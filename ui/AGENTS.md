@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Poject is a console-focused SPA in this repo. It relies on Mantine v8, TanStack Router, and react-i18next.
+Project is a console-focused SPA in this repo. It relies on Mantine v8, TanStack Router, and react-i18next.
 
 ---
 
@@ -35,7 +35,7 @@ Fix any lint/typecheck failures before committing.
 
 Allowed top-level folders under `src`:
 
-* `src/routes`   — routing adapters only
+* `src/routes`   — routing adapters (may include trivial static UI)
 * `src/features` — domain features (pages + business)
 * `src/shared`   — cross-feature infrastructure
 * `src/locales`  — per-feature localization files
@@ -46,15 +46,15 @@ Do not introduce additional architectural layers beyond these.
 
 * `src/routes`
 
-  * Routing DSL only (createFileRoute, layout, params/loaders)
-  * Mount feature pages
-  * MUST NOT contain UI or business logic
+  * Routing DSL (createFileRoute, layout, params/loaders)
+  * Trivial static UI only (see project-discipline references for criteria)
+  * Mount feature pages for non-trivial pages
 
 * `src/features`
 
   * Real feature implementation
   * pages / components / hooks / utils / api
-  * Each static page route maps to exactly one feature
+  * Most static page routes map to exactly one feature
 
 * `src/shared`
 
@@ -95,25 +95,24 @@ The enabled discipline bundle is:
 
 * `skills/project-discipline/`
 
-See `SKILL.md` and `rules/*.md` for Mantine, TanStack Router, react-console, and react-i18next guidance.
+See `SKILL.md` and `references/*.md` for Mantine, TanStack Router, react-console, and react-i18next guidance.
 
 `skills/` in this repository is the source of truth; `npx skills add ./skills/...` is only for installing this guidance into a local agent environment (e.g. under `.codex/` / `.cursor/`) to make it easier to load.
 
 When working on feature updates (routes, layouts, components, navigation, or translations), always read:
 
 * `skills/project-discipline/SKILL.md`
-* referenced rules inside that bundle
+* referenced docs inside that bundle
 
 Keep `AGENTS.md` high-level (stack / structure / forbidden items).
 Treat the project-discipline skill as the living reference for coding patterns.
 
-Update SKILL / rules files instead of duplicating content here.
+Update SKILL / reference files instead of duplicating content here.
 
 ---
 
 ## Forbidden
 
-* UI or business logic inside `src/routes`
 * Domain logic inside `src/shared`
 * Hooks directory containing non-hook functions
 * Utils using `use*` naming

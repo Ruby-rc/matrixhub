@@ -1,49 +1,27 @@
 ---
 name: project-discipline
-description: Discipline bundle for this project, covering Mantine, TanStack Router, react-console patterns, and react-i18next conventions as defined in AGENTS.md.
-metadata:
-  version: "1.0.0"
-  llm: true
-  entry_points:
-    - rules/mantine.md
-    - rules/tanstack-router.md
-    - rules/react-i18next.md
-    - rules/react-console.md
-    - rules/README.md
+description: Discipline bundle for the console SPA; use when applying Mantine, TanStack Router, react-console, or react-i18next conventions documented in AGENTS.md and the linked reference docs.
 ---
-
 
 # Console Discipline Bundle
 
-This skill encapsulates the core guidance from `AGENTS.md` so contributors can load one entry point that explains Mantine layout/theming, TanStack Router's file-based routing, console route expectations, and react-i18next localization discipline.
+Use this skill to load consolidated guidance when you touch Mantine layout/theming, TanStack Router file routes, console-specific routing duties, or react-i18next localization in the console SPA.
 
-## LLM / Agent integration
+## Entry points
 
-This skill is adapted for both human and AI consumption. Each rule file follows a consistent structure:
+- references/mantine.md: Mantine layout, tokens, and styling discipline.
+- references/tanstack-router.md: file-based routing discipline.
+- references/react-console.md: console route checklist and UX expectations.
+- references/react-i18next.md: i18n discipline and locale structure.
+- references/structure.md: structure mapping example for routes, features, and locales.
 
-1. Quick intent — when an agent should consult this doc
-2. Human guidance — concise examples, checklist, and links
-3. LLM hints — prompts, indexes, and when to use full LLMS index
+## Usage guidance
 
-Agents may `npx skills add ./skills/project-discipline` or read files in-place. The repo version is authoritative.
+- Start with the relevant file under references/ for details.
+- Consult this bundle before changing any file under src/routes, src/features, or src/locales.
+- Keep shared infrastructure in src/shared. src/routes may contain simple UI, but complex logic belongs in src/features.
+- Use t('{feature}.{path}') with feature-local locale files; avoid literal JSX strings.
 
-## How this is organized
+## Loading the skill
 
-- **Project invariants** live in `ui/AGENTS.md` (stack, folder boundaries, forbidden items).
-- **This skill** is the single entry point for day-to-day coding patterns.
-- **Detailed rules** are split by topic under `rules/` (see `rules/README.md`).
-
-## When to consult
-
-- When creating or updating a console route under `src/routes` to keep features isolated and router-driven.
-- When defining layouts/spacings so Mantine primitives and theme tokens stay consistent across the console SPA.
-- When implementing translations/localization to avoid literal JSX strings and keep namespaces aligned with route folders.
-- When newcomers need a single reference that links to the four discipline rules inherited from the AGENTS instructions.
-
-## Rules
-
-- Index / precedence: `rules/README.md`
-- Mantine layout & theming: `rules/mantine.md`
-- Console route duties/limits: `rules/react-console.md`
-- React-i18next namespace discipline: `rules/react-i18next.md`
-- TanStack Router file-based routing: `rules/tanstack-router.md`
+Run npx skills add ./skills/project-discipline from the repo root or open the files directly; the repo copy is authoritative for this codebase.
