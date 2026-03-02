@@ -51,6 +51,12 @@ Build and start the local stack:
 make compose-deploy
 ```
 
+## Run in local environment
+
+```bash
+go run main.go
+```
+
 ## Contact
 
 - [Slack](https://cloud-native.slack.com/archives/C0A8UKWR8HG) - Join us in the CNCF Slack workspace.

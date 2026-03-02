@@ -71,6 +71,7 @@ func NewAPIServer(config *config.Config) *APIServer {
 		handlers: []handler.IHandler{
 			handler.NewProjectHandler(projectService),
 			handler.NewUserHandler(repos.User),
+			handler.NewRegistryHandler(),
 		},
 	}
 

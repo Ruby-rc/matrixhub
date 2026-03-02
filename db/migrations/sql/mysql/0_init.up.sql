@@ -69,6 +69,23 @@ CREATE TABLE IF NOT EXISTS `datasets`
     KEY `name` (`name`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
 
+CREATE TABLE IF NOT EXISTS `registries`
+(
+    `id`              int          NOT NULL AUTO_INCREMENT,
+    `name`            varchar(64)  NOT NULL,
+    `description`     text         NOT NULL,
+    `type`            varchar(64)  NOT NULL, -- registry provider (huggingface, etc.)
+    `url`             varchar(255) NOT NULL,
+    `credential_type` varchar(255) DEFAULT NULL, -- ('basic', 'oauth', 'secret')
+    `auth_info`       text,
+    `insecure`        tinyint(1)   NOT NULL DEFAULT '0', -- skip SSL verification (0 for False, 1 for True)
+    `status`          int          NOT NULL, -- status (healthy, unhealthy, unknown)
+    `created_at`      timestamp    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`      timestamp    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    KEY `name` (`name`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
+
 CREATE TABLE IF NOT EXISTS `access_tokens`
 (
     `id`           int         NOT NULL AUTO_INCREMENT,
