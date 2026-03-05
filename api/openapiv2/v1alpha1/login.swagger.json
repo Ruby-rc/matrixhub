@@ -35,22 +35,12 @@
         },
         "parameters": [
           {
-            "name": "username",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "password",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "rememberMe",
-            "in": "query",
-            "required": false,
-            "type": "boolean"
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1alpha1LoginRequest"
+            }
           }
         ],
         "tags": [
@@ -120,8 +110,58 @@
         }
       }
     },
+    "v1alpha1Cookie": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "maxAge": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "domain": {
+          "type": "string"
+        },
+        "secure": {
+          "type": "boolean"
+        },
+        "sameSite": {
+          "type": "string"
+        }
+      }
+    },
+    "v1alpha1LoginRequest": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "rememberMe": {
+          "type": "boolean"
+        }
+      }
+    },
     "v1alpha1LoginResponse": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "cookies": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1alpha1Cookie"
+          }
+        }
+      }
     },
     "v1alpha1LogoutRequest": {
       "type": "object"

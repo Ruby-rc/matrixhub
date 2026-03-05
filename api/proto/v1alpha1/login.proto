@@ -10,7 +10,7 @@ service Login {
   rpc Login(LoginRequest) returns (LoginResponse) {
     option (google.api.http) = {
       post: "/api/v1alpha1/login"
-      body: ""
+      body: "*"
     };
   }
 
@@ -28,7 +28,19 @@ message LoginRequest {
   bool remember_me = 3;
 }
 
-message LoginResponse {}
+message LoginResponse {
+  repeated Cookie cookies = 1;
+}
+
+message Cookie {
+  string name = 1;
+  string value = 2;
+  string path = 3;
+  int32 max_age = 4;
+  string domain = 5;
+  bool secure = 6;
+  string same_site = 7;
+}
 
 message LogoutRequest {}
 
