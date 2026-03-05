@@ -65,6 +65,35 @@ func (m *PullBasePolicy) validate(all bool) error {
 
 	// no validation rules for TargetResourceName
 
+	if all {
+		switch v := interface{}(m.GetSourceRegistry()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, PullBasePolicyValidationError{
+					field:  "SourceRegistry",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, PullBasePolicyValidationError{
+					field:  "SourceRegistry",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetSourceRegistry()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return PullBasePolicyValidationError{
+				field:  "SourceRegistry",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
 	if len(errors) > 0 {
 		return PullBasePolicyMultiError(errors)
 	}
@@ -172,6 +201,35 @@ func (m *PushBasePolicy) validate(all bool) error {
 	// no validation rules for TargetRegistryId
 
 	// no validation rules for TargetResourceName
+
+	if all {
+		switch v := interface{}(m.GetTargetRegistry()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, PushBasePolicyValidationError{
+					field:  "TargetRegistry",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, PushBasePolicyValidationError{
+					field:  "TargetRegistry",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetTargetRegistry()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return PushBasePolicyValidationError{
+				field:  "TargetRegistry",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
 
 	if len(errors) > 0 {
 		return PushBasePolicyMultiError(errors)

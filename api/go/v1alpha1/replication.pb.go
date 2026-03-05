@@ -229,12 +229,14 @@ func (ReplicationExecutionStatus) EnumDescriptor() ([]byte, []int) {
 
 type PullBasePolicy struct {
 	state              protoimpl.MessageState `protogen:"open.v1"`
-	SourceRegistryId   string                 `protobuf:"bytes,1,opt,name=source_registry_id,json=sourceRegistryId,proto3" json:"source_registry_id,omitempty"`
+	SourceRegistryId   uint32                 `protobuf:"varint,1,opt,name=source_registry_id,json=sourceRegistryId,proto3" json:"source_registry_id,omitempty"`
 	ResourceName       string                 `protobuf:"bytes,2,opt,name=resource_name,json=resourceName,proto3" json:"resource_name,omitempty"`
 	ResourceType       ResourceType           `protobuf:"varint,3,opt,name=resource_type,json=resourceType,proto3,enum=matrixhub.v1alpha1.ResourceType" json:"resource_type,omitempty"`
 	TargetResourceName string                 `protobuf:"bytes,4,opt,name=target_resource_name,json=targetResourceName,proto3" json:"target_resource_name,omitempty"`
-	unknownFields      protoimpl.UnknownFields
-	sizeCache          protoimpl.SizeCache
+	// post or put do not require this field.
+	SourceRegistry *Registry `protobuf:"bytes,5,opt,name=source_registry,json=sourceRegistry,proto3" json:"source_registry,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *PullBasePolicy) Reset() {
@@ -267,11 +269,11 @@ func (*PullBasePolicy) Descriptor() ([]byte, []int) {
 	return file_v1alpha1_replication_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *PullBasePolicy) GetSourceRegistryId() string {
+func (x *PullBasePolicy) GetSourceRegistryId() uint32 {
 	if x != nil {
 		return x.SourceRegistryId
 	}
-	return ""
+	return 0
 }
 
 func (x *PullBasePolicy) GetResourceName() string {
@@ -295,14 +297,23 @@ func (x *PullBasePolicy) GetTargetResourceName() string {
 	return ""
 }
 
+func (x *PullBasePolicy) GetSourceRegistry() *Registry {
+	if x != nil {
+		return x.SourceRegistry
+	}
+	return nil
+}
+
 type PushBasePolicy struct {
 	state              protoimpl.MessageState `protogen:"open.v1"`
 	ResourceName       string                 `protobuf:"bytes,1,opt,name=resource_name,json=resourceName,proto3" json:"resource_name,omitempty"`
 	ResourceType       ResourceType           `protobuf:"varint,2,opt,name=resource_type,json=resourceType,proto3,enum=matrixhub.v1alpha1.ResourceType" json:"resource_type,omitempty"`
-	TargetRegistryId   string                 `protobuf:"bytes,3,opt,name=target_registry_id,json=targetRegistryId,proto3" json:"target_registry_id,omitempty"`
+	TargetRegistryId   uint32                 `protobuf:"varint,3,opt,name=target_registry_id,json=targetRegistryId,proto3" json:"target_registry_id,omitempty"`
 	TargetResourceName string                 `protobuf:"bytes,4,opt,name=target_resource_name,json=targetResourceName,proto3" json:"target_resource_name,omitempty"`
-	unknownFields      protoimpl.UnknownFields
-	sizeCache          protoimpl.SizeCache
+	// post or put do not require this field.
+	TargetRegistry *Registry `protobuf:"bytes,5,opt,name=target_registry,json=targetRegistry,proto3" json:"target_registry,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *PushBasePolicy) Reset() {
@@ -349,11 +360,11 @@ func (x *PushBasePolicy) GetResourceType() ResourceType {
 	return ResourceType_RESOURCE_TYPE_UNSPECIFIED
 }
 
-func (x *PushBasePolicy) GetTargetRegistryId() string {
+func (x *PushBasePolicy) GetTargetRegistryId() uint32 {
 	if x != nil {
 		return x.TargetRegistryId
 	}
-	return ""
+	return 0
 }
 
 func (x *PushBasePolicy) GetTargetResourceName() string {
@@ -361,6 +372,13 @@ func (x *PushBasePolicy) GetTargetResourceName() string {
 		return x.TargetResourceName
 	}
 	return ""
+}
+
+func (x *PushBasePolicy) GetTargetRegistry() *Registry {
+	if x != nil {
+		return x.TargetRegistry
+	}
+	return nil
 }
 
 type ReplicationItem struct {
@@ -1482,17 +1500,19 @@ var File_v1alpha1_replication_proto protoreflect.FileDescriptor
 
 const file_v1alpha1_replication_proto_rawDesc = "" +
 	"\n" +
-	"\x1av1alpha1/replication.proto\x12\x12matrixhub.v1alpha1\x1a\x1cgoogle/api/annotations.proto\x1a\x14v1alpha1/utils.proto\"\xdc\x01\n" +
+	"\x1av1alpha1/replication.proto\x12\x12matrixhub.v1alpha1\x1a\x1cgoogle/api/annotations.proto\x1a\x14v1alpha1/utils.proto\x1a\x17v1alpha1/registry.proto\"\xa3\x02\n" +
 	"\x0ePullBasePolicy\x12,\n" +
-	"\x12source_registry_id\x18\x01 \x01(\tR\x10sourceRegistryId\x12#\n" +
+	"\x12source_registry_id\x18\x01 \x01(\rR\x10sourceRegistryId\x12#\n" +
 	"\rresource_name\x18\x02 \x01(\tR\fresourceName\x12E\n" +
 	"\rresource_type\x18\x03 \x01(\x0e2 .matrixhub.v1alpha1.ResourceTypeR\fresourceType\x120\n" +
-	"\x14target_resource_name\x18\x04 \x01(\tR\x12targetResourceName\"\xdc\x01\n" +
+	"\x14target_resource_name\x18\x04 \x01(\tR\x12targetResourceName\x12E\n" +
+	"\x0fsource_registry\x18\x05 \x01(\v2\x1c.matrixhub.v1alpha1.RegistryR\x0esourceRegistry\"\xa3\x02\n" +
 	"\x0ePushBasePolicy\x12#\n" +
 	"\rresource_name\x18\x01 \x01(\tR\fresourceName\x12E\n" +
 	"\rresource_type\x18\x02 \x01(\x0e2 .matrixhub.v1alpha1.ResourceTypeR\fresourceType\x12,\n" +
-	"\x12target_registry_id\x18\x03 \x01(\tR\x10targetRegistryId\x120\n" +
-	"\x14target_resource_name\x18\x04 \x01(\tR\x12targetResourceName\"\xf3\x03\n" +
+	"\x12target_registry_id\x18\x03 \x01(\rR\x10targetRegistryId\x120\n" +
+	"\x14target_resource_name\x18\x04 \x01(\tR\x12targetResourceName\x12E\n" +
+	"\x0ftarget_registry\x18\x05 \x01(\v2\x1c.matrixhub.v1alpha1.RegistryR\x0etargetRegistry\"\xf3\x03\n" +
 	"\x0fReplicationItem\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x05R\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
@@ -1645,51 +1665,54 @@ var file_v1alpha1_replication_proto_goTypes = []any{
 	(*ListReplicationExecutionsResponse)(nil),  // 19: matrixhub.v1alpha1.ListReplicationExecutionsResponse
 	(*StopReplicationExecutionRequest)(nil),    // 20: matrixhub.v1alpha1.StopReplicationExecutionRequest
 	(*StopReplicationExecutionResponse)(nil),   // 21: matrixhub.v1alpha1.StopReplicationExecutionResponse
-	(*Pagination)(nil),                         // 22: matrixhub.v1alpha1.Pagination
+	(*Registry)(nil),                           // 22: matrixhub.v1alpha1.Registry
+	(*Pagination)(nil),                         // 23: matrixhub.v1alpha1.Pagination
 }
 var file_v1alpha1_replication_proto_depIdxs = []int32{
 	1,  // 0: matrixhub.v1alpha1.PullBasePolicy.resource_type:type_name -> matrixhub.v1alpha1.ResourceType
-	1,  // 1: matrixhub.v1alpha1.PushBasePolicy.resource_type:type_name -> matrixhub.v1alpha1.ResourceType
-	0,  // 2: matrixhub.v1alpha1.ReplicationItem.policy_type:type_name -> matrixhub.v1alpha1.ReplicationPolicyType
-	2,  // 3: matrixhub.v1alpha1.ReplicationItem.trigger_type:type_name -> matrixhub.v1alpha1.triggerType
-	4,  // 4: matrixhub.v1alpha1.ReplicationItem.pull_base_policy:type_name -> matrixhub.v1alpha1.PullBasePolicy
-	5,  // 5: matrixhub.v1alpha1.ReplicationItem.push_base_policy:type_name -> matrixhub.v1alpha1.PushBasePolicy
-	0,  // 6: matrixhub.v1alpha1.CreateReplicationRequest.policy_type:type_name -> matrixhub.v1alpha1.ReplicationPolicyType
-	2,  // 7: matrixhub.v1alpha1.CreateReplicationRequest.trigger_type:type_name -> matrixhub.v1alpha1.triggerType
-	4,  // 8: matrixhub.v1alpha1.CreateReplicationRequest.pull_base_policy:type_name -> matrixhub.v1alpha1.PullBasePolicy
-	5,  // 9: matrixhub.v1alpha1.CreateReplicationRequest.push_base_policy:type_name -> matrixhub.v1alpha1.PushBasePolicy
-	6,  // 10: matrixhub.v1alpha1.CreateReplicationResponse.replication:type_name -> matrixhub.v1alpha1.ReplicationItem
-	2,  // 11: matrixhub.v1alpha1.UpdateReplicationRequest.trigger_type:type_name -> matrixhub.v1alpha1.triggerType
-	4,  // 12: matrixhub.v1alpha1.UpdateReplicationRequest.pull_base_policy:type_name -> matrixhub.v1alpha1.PullBasePolicy
-	5,  // 13: matrixhub.v1alpha1.UpdateReplicationRequest.push_base_policy:type_name -> matrixhub.v1alpha1.PushBasePolicy
-	6,  // 14: matrixhub.v1alpha1.UpdateReplicationResponse.replication:type_name -> matrixhub.v1alpha1.ReplicationItem
-	6,  // 15: matrixhub.v1alpha1.DeleteReplicationResponse.replication:type_name -> matrixhub.v1alpha1.ReplicationItem
-	6,  // 16: matrixhub.v1alpha1.ListReplicationsResponse.replications:type_name -> matrixhub.v1alpha1.ReplicationItem
-	22, // 17: matrixhub.v1alpha1.ListReplicationsResponse.pagination:type_name -> matrixhub.v1alpha1.Pagination
-	2,  // 18: matrixhub.v1alpha1.ReplicationExecution.trigger_type:type_name -> matrixhub.v1alpha1.triggerType
-	3,  // 19: matrixhub.v1alpha1.ReplicationExecution.status:type_name -> matrixhub.v1alpha1.ReplicationExecutionStatus
-	17, // 20: matrixhub.v1alpha1.ListReplicationExecutionsResponse.executions:type_name -> matrixhub.v1alpha1.ReplicationExecution
-	22, // 21: matrixhub.v1alpha1.ListReplicationExecutionsResponse.pagination:type_name -> matrixhub.v1alpha1.Pagination
-	17, // 22: matrixhub.v1alpha1.StopReplicationExecutionResponse.execution:type_name -> matrixhub.v1alpha1.ReplicationExecution
-	13, // 23: matrixhub.v1alpha1.Replication.ListReplications:input_type -> matrixhub.v1alpha1.ListReplicationsRequest
-	7,  // 24: matrixhub.v1alpha1.Replication.CreateReplication:input_type -> matrixhub.v1alpha1.CreateReplicationRequest
-	9,  // 25: matrixhub.v1alpha1.Replication.UpdateReplication:input_type -> matrixhub.v1alpha1.UpdateReplicationRequest
-	11, // 26: matrixhub.v1alpha1.Replication.DeleteReplication:input_type -> matrixhub.v1alpha1.DeleteReplicationRequest
-	15, // 27: matrixhub.v1alpha1.Replication.CreateReplicationExecution:input_type -> matrixhub.v1alpha1.CreateReplicationExecutionRequest
-	18, // 28: matrixhub.v1alpha1.Replication.ListReplicationExecutions:input_type -> matrixhub.v1alpha1.ListReplicationExecutionsRequest
-	20, // 29: matrixhub.v1alpha1.Replication.StopReplicationExecution:input_type -> matrixhub.v1alpha1.StopReplicationExecutionRequest
-	14, // 30: matrixhub.v1alpha1.Replication.ListReplications:output_type -> matrixhub.v1alpha1.ListReplicationsResponse
-	8,  // 31: matrixhub.v1alpha1.Replication.CreateReplication:output_type -> matrixhub.v1alpha1.CreateReplicationResponse
-	10, // 32: matrixhub.v1alpha1.Replication.UpdateReplication:output_type -> matrixhub.v1alpha1.UpdateReplicationResponse
-	12, // 33: matrixhub.v1alpha1.Replication.DeleteReplication:output_type -> matrixhub.v1alpha1.DeleteReplicationResponse
-	16, // 34: matrixhub.v1alpha1.Replication.CreateReplicationExecution:output_type -> matrixhub.v1alpha1.CreateReplicationExecutionResponse
-	19, // 35: matrixhub.v1alpha1.Replication.ListReplicationExecutions:output_type -> matrixhub.v1alpha1.ListReplicationExecutionsResponse
-	21, // 36: matrixhub.v1alpha1.Replication.StopReplicationExecution:output_type -> matrixhub.v1alpha1.StopReplicationExecutionResponse
-	30, // [30:37] is the sub-list for method output_type
-	23, // [23:30] is the sub-list for method input_type
-	23, // [23:23] is the sub-list for extension type_name
-	23, // [23:23] is the sub-list for extension extendee
-	0,  // [0:23] is the sub-list for field type_name
+	22, // 1: matrixhub.v1alpha1.PullBasePolicy.source_registry:type_name -> matrixhub.v1alpha1.Registry
+	1,  // 2: matrixhub.v1alpha1.PushBasePolicy.resource_type:type_name -> matrixhub.v1alpha1.ResourceType
+	22, // 3: matrixhub.v1alpha1.PushBasePolicy.target_registry:type_name -> matrixhub.v1alpha1.Registry
+	0,  // 4: matrixhub.v1alpha1.ReplicationItem.policy_type:type_name -> matrixhub.v1alpha1.ReplicationPolicyType
+	2,  // 5: matrixhub.v1alpha1.ReplicationItem.trigger_type:type_name -> matrixhub.v1alpha1.triggerType
+	4,  // 6: matrixhub.v1alpha1.ReplicationItem.pull_base_policy:type_name -> matrixhub.v1alpha1.PullBasePolicy
+	5,  // 7: matrixhub.v1alpha1.ReplicationItem.push_base_policy:type_name -> matrixhub.v1alpha1.PushBasePolicy
+	0,  // 8: matrixhub.v1alpha1.CreateReplicationRequest.policy_type:type_name -> matrixhub.v1alpha1.ReplicationPolicyType
+	2,  // 9: matrixhub.v1alpha1.CreateReplicationRequest.trigger_type:type_name -> matrixhub.v1alpha1.triggerType
+	4,  // 10: matrixhub.v1alpha1.CreateReplicationRequest.pull_base_policy:type_name -> matrixhub.v1alpha1.PullBasePolicy
+	5,  // 11: matrixhub.v1alpha1.CreateReplicationRequest.push_base_policy:type_name -> matrixhub.v1alpha1.PushBasePolicy
+	6,  // 12: matrixhub.v1alpha1.CreateReplicationResponse.replication:type_name -> matrixhub.v1alpha1.ReplicationItem
+	2,  // 13: matrixhub.v1alpha1.UpdateReplicationRequest.trigger_type:type_name -> matrixhub.v1alpha1.triggerType
+	4,  // 14: matrixhub.v1alpha1.UpdateReplicationRequest.pull_base_policy:type_name -> matrixhub.v1alpha1.PullBasePolicy
+	5,  // 15: matrixhub.v1alpha1.UpdateReplicationRequest.push_base_policy:type_name -> matrixhub.v1alpha1.PushBasePolicy
+	6,  // 16: matrixhub.v1alpha1.UpdateReplicationResponse.replication:type_name -> matrixhub.v1alpha1.ReplicationItem
+	6,  // 17: matrixhub.v1alpha1.DeleteReplicationResponse.replication:type_name -> matrixhub.v1alpha1.ReplicationItem
+	6,  // 18: matrixhub.v1alpha1.ListReplicationsResponse.replications:type_name -> matrixhub.v1alpha1.ReplicationItem
+	23, // 19: matrixhub.v1alpha1.ListReplicationsResponse.pagination:type_name -> matrixhub.v1alpha1.Pagination
+	2,  // 20: matrixhub.v1alpha1.ReplicationExecution.trigger_type:type_name -> matrixhub.v1alpha1.triggerType
+	3,  // 21: matrixhub.v1alpha1.ReplicationExecution.status:type_name -> matrixhub.v1alpha1.ReplicationExecutionStatus
+	17, // 22: matrixhub.v1alpha1.ListReplicationExecutionsResponse.executions:type_name -> matrixhub.v1alpha1.ReplicationExecution
+	23, // 23: matrixhub.v1alpha1.ListReplicationExecutionsResponse.pagination:type_name -> matrixhub.v1alpha1.Pagination
+	17, // 24: matrixhub.v1alpha1.StopReplicationExecutionResponse.execution:type_name -> matrixhub.v1alpha1.ReplicationExecution
+	13, // 25: matrixhub.v1alpha1.Replication.ListReplications:input_type -> matrixhub.v1alpha1.ListReplicationsRequest
+	7,  // 26: matrixhub.v1alpha1.Replication.CreateReplication:input_type -> matrixhub.v1alpha1.CreateReplicationRequest
+	9,  // 27: matrixhub.v1alpha1.Replication.UpdateReplication:input_type -> matrixhub.v1alpha1.UpdateReplicationRequest
+	11, // 28: matrixhub.v1alpha1.Replication.DeleteReplication:input_type -> matrixhub.v1alpha1.DeleteReplicationRequest
+	15, // 29: matrixhub.v1alpha1.Replication.CreateReplicationExecution:input_type -> matrixhub.v1alpha1.CreateReplicationExecutionRequest
+	18, // 30: matrixhub.v1alpha1.Replication.ListReplicationExecutions:input_type -> matrixhub.v1alpha1.ListReplicationExecutionsRequest
+	20, // 31: matrixhub.v1alpha1.Replication.StopReplicationExecution:input_type -> matrixhub.v1alpha1.StopReplicationExecutionRequest
+	14, // 32: matrixhub.v1alpha1.Replication.ListReplications:output_type -> matrixhub.v1alpha1.ListReplicationsResponse
+	8,  // 33: matrixhub.v1alpha1.Replication.CreateReplication:output_type -> matrixhub.v1alpha1.CreateReplicationResponse
+	10, // 34: matrixhub.v1alpha1.Replication.UpdateReplication:output_type -> matrixhub.v1alpha1.UpdateReplicationResponse
+	12, // 35: matrixhub.v1alpha1.Replication.DeleteReplication:output_type -> matrixhub.v1alpha1.DeleteReplicationResponse
+	16, // 36: matrixhub.v1alpha1.Replication.CreateReplicationExecution:output_type -> matrixhub.v1alpha1.CreateReplicationExecutionResponse
+	19, // 37: matrixhub.v1alpha1.Replication.ListReplicationExecutions:output_type -> matrixhub.v1alpha1.ListReplicationExecutionsResponse
+	21, // 38: matrixhub.v1alpha1.Replication.StopReplicationExecution:output_type -> matrixhub.v1alpha1.StopReplicationExecutionResponse
+	32, // [32:39] is the sub-list for method output_type
+	25, // [25:32] is the sub-list for method input_type
+	25, // [25:25] is the sub-list for extension type_name
+	25, // [25:25] is the sub-list for extension extendee
+	0,  // [0:25] is the sub-list for field type_name
 }
 
 func init() { file_v1alpha1_replication_proto_init() }
@@ -1698,6 +1721,7 @@ func file_v1alpha1_replication_proto_init() {
 		return
 	}
 	file_v1alpha1_utils_proto_init()
+	file_v1alpha1_registry_proto_init()
 	file_v1alpha1_replication_proto_msgTypes[2].OneofWrappers = []any{
 		(*ReplicationItem_PullBasePolicy)(nil),
 		(*ReplicationItem_PushBasePolicy)(nil),

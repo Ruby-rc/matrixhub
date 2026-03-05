@@ -458,7 +458,8 @@
       "type": "object",
       "properties": {
         "sourceRegistryId": {
-          "type": "string"
+          "type": "integer",
+          "format": "int64"
         },
         "resourceName": {
           "type": "string"
@@ -468,6 +469,10 @@
         },
         "targetResourceName": {
           "type": "string"
+        },
+        "sourceRegistry": {
+          "$ref": "#/definitions/v1alpha1Registry",
+          "description": "post or put do not require this field."
         }
       }
     },
@@ -481,12 +486,87 @@
           "$ref": "#/definitions/v1alpha1ResourceType"
         },
         "targetRegistryId": {
-          "type": "string"
+          "type": "integer",
+          "format": "int64"
         },
         "targetResourceName": {
           "type": "string"
+        },
+        "targetRegistry": {
+          "$ref": "#/definitions/v1alpha1Registry",
+          "description": "post or put do not require this field."
         }
       }
+    },
+    "v1alpha1Registry": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int64",
+          "title": "Unique identifier for the registry"
+        },
+        "name": {
+          "type": "string",
+          "title": "Name of the registry"
+        },
+        "description": {
+          "type": "string",
+          "title": "Description of the registry\n+optional"
+        },
+        "type": {
+          "$ref": "#/definitions/v1alpha1RegistryType",
+          "title": "Type of registry (e.g., huggingface, etc.)"
+        },
+        "url": {
+          "type": "string",
+          "title": "URL of the registry"
+        },
+        "basic": {
+          "$ref": "#/definitions/v1alpha1RegistryBasicCredential",
+          "description": "Basic authentication credentials for the registry."
+        },
+        "insecure": {
+          "type": "boolean",
+          "title": "Whether to allow insecure connections (e.g., skip TLS verification)"
+        },
+        "status": {
+          "type": "integer",
+          "format": "int64",
+          "title": "Status of the registry (e.g., 1=active, 0=disabled, custom meanings allowed)"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Creation time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Last update time"
+        }
+      }
+    },
+    "v1alpha1RegistryBasicCredential": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string",
+          "title": "Username for basic auth"
+        },
+        "password": {
+          "type": "string",
+          "title": "Password for basic auth"
+        }
+      }
+    },
+    "v1alpha1RegistryType": {
+      "type": "string",
+      "enum": [
+        "REGISTRY_TYPE_UNSPECIFIED",
+        "REGISTRY_TYPE_HUGGINGFACE"
+      ],
+      "default": "REGISTRY_TYPE_UNSPECIFIED"
     },
     "v1alpha1ReplicationExecution": {
       "type": "object",

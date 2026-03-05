@@ -5,6 +5,7 @@
 */
 
 import * as fm from "../fetch.pb"
+import * as MatrixhubV1alpha1Registry from "./registry.pb"
 import * as MatrixhubV1alpha1Utils from "./utils.pb"
 
 type Absent<T, K extends keyof T> = { [k in Exclude<keyof T, K>]?: undefined };
@@ -44,17 +45,19 @@ export enum ReplicationExecutionStatus {
 }
 
 export type PullBasePolicy = {
-  sourceRegistryId?: string
+  sourceRegistryId?: number
   resourceName?: string
   resourceType?: ResourceType
   targetResourceName?: string
+  sourceRegistry?: MatrixhubV1alpha1Registry.Registry
 }
 
 export type PushBasePolicy = {
   resourceName?: string
   resourceType?: ResourceType
-  targetRegistryId?: string
+  targetRegistryId?: number
   targetResourceName?: string
+  targetRegistry?: MatrixhubV1alpha1Registry.Registry
 }
 
 
