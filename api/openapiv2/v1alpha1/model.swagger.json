@@ -38,7 +38,11 @@
             "name": "label",
             "in": "query",
             "required": false,
-            "type": "string"
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
           },
           {
             "name": "search",
@@ -48,6 +52,12 @@
           },
           {
             "name": "sort",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "project",
             "in": "query",
             "required": false,
             "type": "string"
@@ -102,7 +112,7 @@
         ]
       }
     },
-    "/api/v1alpha1/models/frame-labels": {
+    "/api/v1alpha1/models/library-labels": {
       "get": {
         "operationId": "Models_ListModelFrameLabels",
         "responses": {
@@ -465,6 +475,9 @@
         "name": {
           "type": "string"
         },
+        "category": {
+          "$ref": "#/definitions/v1alpha1Category"
+        },
         "createdAt": {
           "type": "string"
         },
@@ -500,6 +513,14 @@
           }
         }
       }
+    },
+    "v1alpha1Category": {
+      "type": "string",
+      "enum": [
+        "TASK",
+        "LIBRARY"
+      ],
+      "default": "TASK"
     },
     "v1alpha1CloneUrls": {
       "type": "object",
@@ -736,6 +757,9 @@
           "type": "string"
         },
         "size": {
+          "type": "string"
+        },
+        "parameterCount": {
           "type": "string"
         }
       }

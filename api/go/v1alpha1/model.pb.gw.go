@@ -614,7 +614,7 @@ func RegisterModelsHandlerServer(ctx context.Context, mux *runtime.ServeMux, ser
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/matrixhub.v1alpha1.Models/ListModelFrameLabels", runtime.WithHTTPPathPattern("/api/v1alpha1/models/frame-labels"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/matrixhub.v1alpha1.Models/ListModelFrameLabels", runtime.WithHTTPPathPattern("/api/v1alpha1/models/library-labels"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -869,7 +869,7 @@ func RegisterModelsHandlerClient(ctx context.Context, mux *runtime.ServeMux, cli
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/matrixhub.v1alpha1.Models/ListModelFrameLabels", runtime.WithHTTPPathPattern("/api/v1alpha1/models/frame-labels"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/matrixhub.v1alpha1.Models/ListModelFrameLabels", runtime.WithHTTPPathPattern("/api/v1alpha1/models/library-labels"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -1040,7 +1040,7 @@ func RegisterModelsHandlerClient(ctx context.Context, mux *runtime.ServeMux, cli
 
 var (
 	pattern_Models_ListModelTaskLabels_0  = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1alpha1", "models", "task-labels"}, ""))
-	pattern_Models_ListModelFrameLabels_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1alpha1", "models", "frame-labels"}, ""))
+	pattern_Models_ListModelFrameLabels_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1alpha1", "models", "library-labels"}, ""))
 	pattern_Models_ListModels_0           = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"api", "v1alpha1", "models"}, ""))
 	pattern_Models_GetModel_0             = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "v1alpha1", "models", "project", "name"}, ""))
 	pattern_Models_CreateModel_0          = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"api", "v1alpha1", "models"}, ""))

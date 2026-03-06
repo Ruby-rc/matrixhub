@@ -536,11 +536,11 @@ func (m *ListModelsRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Label
-
 	// no validation rules for Search
 
 	// no validation rules for Sort
+
+	// no validation rules for Project
 
 	// no validation rules for Page
 
@@ -2858,6 +2858,8 @@ func (m *Model) validate(all bool) error {
 
 	// no validation rules for Size
 
+	// no validation rules for ParameterCount
+
 	if len(errors) > 0 {
 		return ModelMultiError(errors)
 	}
@@ -3423,6 +3425,8 @@ func (m *Label) validate(all bool) error {
 	// no validation rules for Id
 
 	// no validation rules for Name
+
+	// no validation rules for Category
 
 	// no validation rules for CreatedAt
 

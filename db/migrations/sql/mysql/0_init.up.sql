@@ -90,7 +90,7 @@ CREATE TABLE IF NOT EXISTS `labels`
 (
     `id`         int         NOT NULL AUTO_INCREMENT COMMENT 'Label ID',
     `name`       varchar(64) NOT NULL COMMENT 'Label name',
-    `category`   varchar(32) NOT NULL COMMENT 'Category (task/framework)',
+    `category`   varchar(32) NOT NULL COMMENT 'Category (task/library/other)',
     `scope`      varchar(16) NOT NULL COMMENT 'Scope (model/dataset)',
     `created_at` timestamp   NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` timestamp   NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -98,7 +98,7 @@ CREATE TABLE IF NOT EXISTS `labels`
     UNIQUE KEY `uniq_name_category_scope` (`name`, `category`, `scope`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT = 'Model labels';
 
-CREATE TABLE IF NOT EXISTS `model_labels`
+CREATE TABLE IF NOT EXISTS `models_labels`
 (
     `model_id`   bigint      NOT NULL COMMENT 'Reference to models.id',
     `label_id`   int         NOT NULL COMMENT 'Reference to labels.id',

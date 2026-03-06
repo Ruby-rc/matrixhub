@@ -16,7 +16,7 @@ service Models {
   }
   rpc ListModelFrameLabels(ListModelFrameLabelsRequest) returns (ListModelFrameLabelsResponse) {
     option (google.api.http) = {
-      get: "/api/v1alpha1/models/frame-labels"
+      get: "/api/v1alpha1/models/library-labels"
     };
   }
   rpc ListModels(ListModelsRequest) returns (ListModelsResponse) {
@@ -82,11 +82,12 @@ message ListModelFrameLabelsResponse {
 }
 
 message ListModelsRequest {
-  string label = 1;
+  repeated  string label = 1;
   string search = 2;
   string sort = 3;
-  int32 page = 4;
-  int32 page_size = 5;
+  string project = 4;
+  int32 page = 5;
+  int32 page_size = 6;
 }
 
 message ListModelsResponse {
@@ -192,6 +193,7 @@ message Model {
   string project = 9;
   string readme_content = 10;
   string size = 11;
+  string parameter_count = 12;
 }
 
 message CloneUrls {
@@ -202,6 +204,11 @@ message CloneUrls {
 enum FileType {
   DIR = 0;
   FILE = 1;
+}
+
+enum Category {
+  TASK = 0;
+  LIBRARY = 1;
 }
 
 message Revision {
@@ -233,6 +240,7 @@ message Diff {
 message Label {
   int32 id = 1;
   string name = 2;
+  Category category = 3;
   string created_at = 4;
   string updated_at = 5;
 }

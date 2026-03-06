@@ -12,6 +12,11 @@ export enum FileType {
   FILE = "FILE",
 }
 
+export enum Category {
+  TASK = "TASK",
+  LIBRARY = "LIBRARY",
+}
+
 export type ListModelTaskLabelsRequest = {
 }
 
@@ -27,9 +32,10 @@ export type ListModelFrameLabelsResponse = {
 }
 
 export type ListModelsRequest = {
-  label?: string
+  label?: string[]
   search?: string
   sort?: string
+  project?: string
   page?: number
   pageSize?: number
 }
@@ -135,6 +141,7 @@ export type Model = {
   project?: string
   readmeContent?: string
   size?: string
+  parameterCount?: string
 }
 
 export type CloneUrls = {
@@ -171,6 +178,7 @@ export type Diff = {
 export type Label = {
   id?: number
   name?: string
+  category?: Category
   createdAt?: string
   updatedAt?: string
 }
@@ -180,7 +188,7 @@ export class Models {
     return fm.fetchReq<ListModelTaskLabelsRequest, ListModelTaskLabelsResponse>(`/api/v1alpha1/models/task-labels?${fm.renderURLSearchParams(req, [])}`, {...initReq, method: "GET"})
   }
   static ListModelFrameLabels(req: ListModelFrameLabelsRequest, initReq?: fm.InitReq): Promise<ListModelFrameLabelsResponse> {
-    return fm.fetchReq<ListModelFrameLabelsRequest, ListModelFrameLabelsResponse>(`/api/v1alpha1/models/frame-labels?${fm.renderURLSearchParams(req, [])}`, {...initReq, method: "GET"})
+    return fm.fetchReq<ListModelFrameLabelsRequest, ListModelFrameLabelsResponse>(`/api/v1alpha1/models/library-labels?${fm.renderURLSearchParams(req, [])}`, {...initReq, method: "GET"})
   }
   static ListModels(req: ListModelsRequest, initReq?: fm.InitReq): Promise<ListModelsResponse> {
     return fm.fetchReq<ListModelsRequest, ListModelsResponse>(`/api/v1alpha1/models?${fm.renderURLSearchParams(req, [])}`, {...initReq, method: "GET"})
