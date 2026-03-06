@@ -17,6 +17,7 @@ package repo
 import (
 	"gorm.io/gorm"
 
+	"github.com/matrixhub-ai/matrixhub/internal/domain/model"
 	"github.com/matrixhub-ai/matrixhub/internal/domain/project"
 	"github.com/matrixhub-ai/matrixhub/internal/domain/user"
 	"github.com/matrixhub-ai/matrixhub/internal/infra/config"
@@ -30,6 +31,7 @@ type Repos struct {
 	DB      *gorm.DB
 	Project project.IProjectRepo
 	User    user.IUserRepo
+	Model   model.IModelRepo
 }
 
 func NewRepos(conf *config.Config) *Repos {
@@ -45,6 +47,7 @@ func NewRepos(conf *config.Config) *Repos {
 
 	repos.Project = NewProjectDBRepo(repos.DB)
 	repos.User = NewUserRepo(repos.DB)
+	repos.Model = NewModelDB(repos.DB)
 
 	return repos
 }

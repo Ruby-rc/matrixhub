@@ -16,6 +16,8 @@ package handler
 
 import (
 	"context"
+	"fmt"
+	"time"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -36,6 +38,52 @@ func NewModelHandler(modelService model.IModelService) IHandler {
 	return handler
 }
 
+// formatSize converts bytes to string without unit conversion
+func formatSize(bytes int64) string {
+	return fmt.Sprintf("%d", bytes)
+}
+
+// formatParameterCount converts parameter count to string without unit conversion
+func formatParameterCount(count int64) string {
+	return fmt.Sprintf("%d", count)
+}
+
+// modelToProto converts domain Model to proto Model
+func modelToProto(m *model.Model) *modelv1alpha1.Model {
+	labels := make([]*modelv1alpha1.Label, len(m.Labels))
+	for i, l := range m.Labels {
+		labels[i] = &modelv1alpha1.Label{
+			Id:        int32(l.ID),
+			Name:      l.Name,
+			Category:  modelv1alpha1.Category_TASK, // Default to TASK
+			CreatedAt: l.CreatedAt.Format(time.RFC3339),
+			UpdatedAt: l.UpdatedAt.Format(time.RFC3339),
+		}
+		// Map category string to proto enum
+		if l.Category == "library" {
+			labels[i].Category = modelv1alpha1.Category_LIBRARY
+		}
+	}
+
+	return &modelv1alpha1.Model{
+		Id:             int32(m.ID),
+		Name:           m.Name,
+		Nickname:       "", // Not implemented yet
+		DefaultBranch:  "main",
+		CreatedAt:      m.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:      m.UpdatedAt.Format(time.RFC3339),
+		CloneUrls: &modelv1alpha1.CloneUrls{
+			SshUrl:  "",
+			HttpUrl: "",
+		},
+		Labels:         labels,
+		Project:        m.ProjectName,
+		ReadmeContent:  m.ReadmeContent,
+		Size:           formatSize(m.Size),
+		ParameterCount: formatParameterCount(m.ParameterCount),
+	}
+}
+
 func (mh *ModelHandler) RegisterToServer(options *ServerOptions) {
 	// Register GRPC Handler
 	modelv1alpha1.RegisterModelsServer(options.GRPCServer, mh)
@@ -53,7 +101,42 @@ func (mh *ModelHandler) ListModelFrameLabels(ctx context.Context, request *model
 }
 
 func (mh *ModelHandler) ListModels(ctx context.Context, request *modelv1alpha1.ListModelsRequest) (*modelv1alpha1.ListModelsResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "Not implemented")
+	// Validate request
+	if err := request.ValidateAll(); err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	// Build filter
+	filter := &model.Filter{
+		Label:    request.Label,
+		Search:   request.Search,
+		Sort:     request.Sort,
+		Project:  request.Project,
+		Page:     request.Page,
+		PageSize: request.PageSize,
+	}
+
+	// Call service
+	models, total, err := mh.ms.ListModels(ctx, filter)
+	if err != nil {
+		return nil, status.Error(codes.Internal, "failed to list models")
+	}
+
+	// Convert to proto
+	items := make([]*modelv1alpha1.Model, len(models))
+	for i, m := range models {
+		items[i] = modelToProto(m)
+	}
+
+	// Build response
+	return &modelv1alpha1.ListModelsResponse{
+		Item: items,
+		Pagination: &modelv1alpha1.Pagination{
+			Total:    int32(total),
+			Page:     request.Page,
+			PageSize: request.PageSize,
+		},
+	}, nil
 }
 
 func (mh *ModelHandler) GetModel(ctx context.Context, request *modelv1alpha1.GetModelRequest) (*modelv1alpha1.Model, error) {

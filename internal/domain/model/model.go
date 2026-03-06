@@ -29,7 +29,7 @@ type Model struct {
 	ParameterCount int64     `json:"parameterCount" db:"parameter_count"`
 	ReadmeContent  string    `json:"readmeContent" db:"readme_content"`
 	IsFeatured     bool      `json:"isFeatured" db:"is_featured"`
-	Labels         []Label   `json:"labels" db:"-"`
+	Labels         []Label   `json:"labels" db:"-" gorm:"-"`
 	CreatedAt      time.Time `json:"createdAt" db:"created_at"`
 	UpdatedAt      time.Time `json:"updatedAt" db:"updated_at"`
 }
@@ -49,8 +49,9 @@ type Label struct {
 
 // Filter defines query parameters for listing models.
 type Filter struct {
-	Label    []string
-	Search   string // project name or model name, prioritize project name matching (supports fuzzy search).
+	Project  string   // filter by project name
+	Label    []string // filter by labels
+	Search   string   // project name or model name, prioritize project name matching (supports fuzzy search).
 	Sort     string
 	Page     int32
 	PageSize int32
