@@ -17,6 +17,7 @@ package handler
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"google.golang.org/grpc/codes"
@@ -110,7 +111,7 @@ func (mh *ModelHandler) ListModelTaskLabels(ctx context.Context, request *modelv
 	}
 
 	return &modelv1alpha1.ListModelTaskLabelsResponse{
-		Item: items,
+		Items: items,
 	}, nil
 }
 
@@ -132,7 +133,7 @@ func (mh *ModelHandler) ListModelFrameLabels(ctx context.Context, request *model
 	}
 
 	return &modelv1alpha1.ListModelFrameLabelsResponse{
-		Item: items,
+		Items: items,
 	}, nil
 }
 
@@ -144,7 +145,7 @@ func (mh *ModelHandler) ListModels(ctx context.Context, request *modelv1alpha1.L
 
 	// Build filter
 	filter := &model.Filter{
-		Label:    request.Label,
+		Label:    request.Labels,
 		Search:   request.Search,
 		Sort:     request.Sort,
 		Project:  request.Project,
@@ -166,7 +167,7 @@ func (mh *ModelHandler) ListModels(ctx context.Context, request *modelv1alpha1.L
 
 	// Build response
 	return &modelv1alpha1.ListModelsResponse{
-		Item: items,
+		Items: items,
 		Pagination: &modelv1alpha1.Pagination{
 			Total:    int32(total),
 			Page:     request.Page,
@@ -176,15 +177,60 @@ func (mh *ModelHandler) ListModels(ctx context.Context, request *modelv1alpha1.L
 }
 
 func (mh *ModelHandler) GetModel(ctx context.Context, request *modelv1alpha1.GetModelRequest) (*modelv1alpha1.Model, error) {
-	return nil, status.Error(codes.Unimplemented, "Not implemented")
+	// Validate request
+	if err := request.ValidateAll(); err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	// Call service
+	model, err := mh.ms.GetModel(ctx, request.Project, request.Name)
+	if err != nil {
+		if strings.Contains(err.Error(), "not found") {
+			return nil, status.Error(codes.NotFound, err.Error())
+		}
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return modelToProto(model), nil
 }
 
 func (mh *ModelHandler) CreateModel(ctx context.Context, request *modelv1alpha1.CreateModelRequest) (*modelv1alpha1.CreateModelResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "Not implemented")
+	// Validate request
+	if err := request.ValidateAll(); err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	// Call service
+	_, err := mh.ms.CreateModel(ctx, request.Project, request.Name)
+	if err != nil {
+		if strings.Contains(err.Error(), "already exists") {
+			return nil, status.Error(codes.AlreadyExists, err.Error())
+		}
+		if strings.Contains(err.Error(), "not found") {
+			return nil, status.Error(codes.NotFound, err.Error())
+		}
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &modelv1alpha1.CreateModelResponse{}, nil
 }
 
 func (mh *ModelHandler) DeleteModel(ctx context.Context, request *modelv1alpha1.DeleteModelRequest) (*modelv1alpha1.DeleteModelResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "Not implemented")
+	// Validate request
+	if err := request.ValidateAll(); err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	// Call service
+	err := mh.ms.DeleteModel(ctx, request.Project, request.Name)
+	if err != nil {
+		if strings.Contains(err.Error(), "not found") {
+			return nil, status.Error(codes.NotFound, err.Error())
+		}
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &modelv1alpha1.DeleteModelResponse{}, nil
 }
 
 func (mh *ModelHandler) ListModelRevisions(ctx context.Context, request *modelv1alpha1.ListModelRevisionsRequest) (*modelv1alpha1.ListModelRevisionsResponse, error) {

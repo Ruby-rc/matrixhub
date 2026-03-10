@@ -62,7 +62,7 @@ func (s *ModelService) CreateModel(ctx context.Context, project, name string) (*
 		return nil, errors.New("invalid project")
 	}
 	if name == "" {
-		return nil, errors.New("invalid input")
+		return nil, errors.New("invalid name")
 	}
 
 	// Check if model already exists
@@ -77,7 +77,8 @@ func (s *ModelService) CreateModel(ctx context.Context, project, name string) (*
 	}
 
 	model := &Model{
-		Name: name,
+		Name:        name,
+		ProjectName: project,
 	}
 
 	if err := s.gitRepo.CreateRepository(ctx, project, name); err != nil {

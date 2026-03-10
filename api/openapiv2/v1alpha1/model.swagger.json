@@ -35,7 +35,7 @@
         },
         "parameters": [
           {
-            "name": "label",
+            "name": "labels",
             "in": "query",
             "required": false,
             "type": "array",

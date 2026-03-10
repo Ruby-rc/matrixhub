@@ -277,7 +277,7 @@ func (x *ListModelFrameLabelsResponse) GetItems() []*Label {
 
 type ListModelsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Label         []string               `protobuf:"bytes,1,rep,name=label,proto3" json:"label,omitempty"`
+	Labels        []string               `protobuf:"bytes,1,rep,name=labels,proto3" json:"labels,omitempty"`
 	Search        string                 `protobuf:"bytes,2,opt,name=search,proto3" json:"search,omitempty"`
 	Sort          string                 `protobuf:"bytes,3,opt,name=sort,proto3" json:"sort,omitempty"`
 	Project       string                 `protobuf:"bytes,4,opt,name=project,proto3" json:"project,omitempty"`
@@ -317,9 +317,9 @@ func (*ListModelsRequest) Descriptor() ([]byte, []int) {
 	return file_v1alpha1_model_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *ListModelsRequest) GetLabel() []string {
+func (x *ListModelsRequest) GetLabels() []string {
 	if x != nil {
-		return x.Label
+		return x.Labels
 	}
 	return nil
 }
@@ -1833,9 +1833,9 @@ const file_v1alpha1_model_proto_rawDesc = "" +
 	"\x05items\x18\x01 \x03(\v2\x19.matrixhub.v1alpha1.LabelR\x05items\"\x1d\n" +
 	"\x1bListModelFrameLabelsRequest\"O\n" +
 	"\x1cListModelFrameLabelsResponse\x12/\n" +
-	"\x05items\x18\x01 \x03(\v2\x19.matrixhub.v1alpha1.LabelR\x05items\"\xa0\x01\n" +
-	"\x11ListModelsRequest\x12\x14\n" +
-	"\x05label\x18\x01 \x03(\tR\x05label\x12\x16\n" +
+	"\x05items\x18\x01 \x03(\v2\x19.matrixhub.v1alpha1.LabelR\x05items\"\xa2\x01\n" +
+	"\x11ListModelsRequest\x12\x16\n" +
+	"\x06labels\x18\x01 \x03(\tR\x06labels\x12\x16\n" +
 	"\x06search\x18\x02 \x01(\tR\x06search\x12\x12\n" +
 	"\x04sort\x18\x03 \x01(\tR\x04sort\x12\x18\n" +
 	"\aproject\x18\x04 \x01(\tR\aproject\x12\x12\n" +

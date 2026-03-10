@@ -116,7 +116,6 @@ CREATE TABLE IF NOT EXISTS `datasets`
     `project_id`      int          NOT NULL COMMENT 'Reference to projects.id',
     `default_branch`  varchar(64)  NOT NULL DEFAULT 'main' COMMENT 'Default branch name',
     `num_rows`        varchar(64)  NOT NULL DEFAULT '' COMMENT 'Number of rows in dataset',
-    `license`         varchar(64)  NOT NULL DEFAULT '' COMMENT 'Dataset license',
     `size`            bigint       NOT NULL DEFAULT 0 COMMENT 'Dataset size in Bytes',
     `readme_content`  longtext     NOT NULL COMMENT 'Dataset README content',
     `created_at`      timestamp    NOT NULL DEFAULT CURRENT_TIMESTAMP,

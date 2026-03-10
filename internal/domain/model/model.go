@@ -24,7 +24,7 @@ type Model struct {
 	ID             int64     `json:"id" db:"id"`
 	Name           string    `json:"name" db:"name"`
 	ProjectID      int       `json:"projectId" db:"project_id"`
-	ProjectName    string    `json:"projectName" db:"project_name"`
+	ProjectName    string    `json:"projectName" db:"project_name" gorm:"<-:false"` // Read-only, not writable
 	Size           int64     `json:"size" db:"size"`
 	DefaultBranch  string    `json:"defaultBranch" db:"default_branch"`
 	ParameterCount int64     `json:"parameterCount" db:"parameter_count"`

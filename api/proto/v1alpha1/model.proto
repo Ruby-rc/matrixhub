@@ -82,7 +82,7 @@ message ListModelFrameLabelsResponse {
 }
 
 message ListModelsRequest {
-  repeated string label = 1;
+  repeated string labels = 1;
   string search = 2;
   string sort = 3;
   string project = 4;

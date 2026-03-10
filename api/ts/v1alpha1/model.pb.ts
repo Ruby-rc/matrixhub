@@ -32,7 +32,7 @@ export type ListModelFrameLabelsResponse = {
 }
 
 export type ListModelsRequest = {
-  label?: string[]
+  labels?: string[]
   search?: string
   sort?: string
   project?: string

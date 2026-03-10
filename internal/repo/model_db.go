@@ -16,6 +16,7 @@ package repo
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"gorm.io/gorm"
@@ -135,15 +136,71 @@ func (m *modelDB) List(ctx context.Context, filter *model.Filter) ([]*model.Mode
 
 // Create creates a new model (placeholder - not implemented for this task)
 func (m *modelDB) Create(ctx context.Context, mod *model.Model) (*model.Model, error) {
-	return nil, fmt.Errorf("not implemented")
+	// Get project ID from project name
+	if mod.ProjectName == "" {
+		return nil, fmt.Errorf("project name is required")
+	}
+
+	var result struct {
+		ID int `db:"id"`
+	}
+	err := m.db.WithContext(ctx).
+		Table("projects").
+		Select("id").
+		Where("name = ?", mod.ProjectName).
+		First(&result).Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, fmt.Errorf("project not found: %s", mod.ProjectName)
+		}
+		return nil, fmt.Errorf("failed to get project: %w", err)
+	}
+
+	// Set project ID and create model
+	mod.ProjectID = result.ID
+	mod.DefaultBranch = "main" // Set default branch
+
+	if err := m.db.WithContext(ctx).Create(mod).Error; err != nil {
+		return nil, fmt.Errorf("failed to create model: %w", err)
+	}
+	return mod, nil
 }
 
-// GetByProjectAndName retrieves a model by project and name (placeholder)
+// GetByProjectAndName retrieves a model by project and name
 func (m *modelDB) GetByProjectAndName(ctx context.Context, project, name string) (*model.Model, error) {
-	return nil, fmt.Errorf("not implemented")
+	var mod model.Model
+	err := m.db.WithContext(ctx).
+		Table("models m").
+		Select(`m.id, m.name, m.project_id, m.size, m.parameter_count,
+				m.readme_content, m.is_popular, m.default_branch,
+				m.created_at, m.updated_at, p.name as project_name`).
+		Joins("INNER JOIN projects p ON m.project_id = p.id").
+		Where("p.name = ? AND m.name = ?", project, name).
+		First(&mod).Error
+
+	if err != nil {
+		fmt.Println(err.Error())
+		return nil, fmt.Errorf("failed to get model: %w", err)
+	}
+	return &mod, nil
 }
 
-// Delete removes a model (placeholder)
+// Delete removes a model by project and name (cascade delete models_labels)
 func (m *modelDB) Delete(ctx context.Context, project, name string) error {
-	return fmt.Errorf("not implemented")
+	// First get the model to obtain its ID
+	mod, err := m.GetByProjectAndName(ctx, project, name)
+	if err != nil {
+		return err
+	}
+
+	// Delete by ID (models_labels will be cascade deleted)
+	err = m.db.WithContext(ctx).
+		Delete(&model.Model{}, mod.ID).Error
+
+	if err != nil {
+		return fmt.Errorf("failed to delete model: %w", err)
+	}
+
+	return nil
 }
