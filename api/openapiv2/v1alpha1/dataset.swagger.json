@@ -583,9 +583,6 @@
         "numRows": {
           "type": "string"
         },
-        "license": {
-          "type": "string"
-        },
         "labels": {
           "type": "array",
           "items": {

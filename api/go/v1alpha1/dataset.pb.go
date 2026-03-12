@@ -1008,13 +1008,12 @@ type Dataset struct {
 	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
 	DefaultBranch string                 `protobuf:"bytes,4,opt,name=default_branch,json=defaultBranch,proto3" json:"default_branch,omitempty"`
 	NumRows       string                 `protobuf:"bytes,5,opt,name=num_rows,json=numRows,proto3" json:"num_rows,omitempty"`
-	License       string                 `protobuf:"bytes,6,opt,name=license,proto3" json:"license,omitempty"`
-	Labels        []*Label               `protobuf:"bytes,7,rep,name=labels,proto3" json:"labels,omitempty"`
-	Size          string                 `protobuf:"bytes,8,opt,name=size,proto3" json:"size,omitempty"`
-	CloneUrls     *CloneUrls             `protobuf:"bytes,9,opt,name=clone_urls,json=cloneUrls,proto3" json:"clone_urls,omitempty"`
-	ReadmeContent string                 `protobuf:"bytes,10,opt,name=readme_content,json=readmeContent,proto3" json:"readme_content,omitempty"`
-	CreatedAt     string                 `protobuf:"bytes,11,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt     string                 `protobuf:"bytes,12,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	Labels        []*Label               `protobuf:"bytes,6,rep,name=labels,proto3" json:"labels,omitempty"`
+	Size          string                 `protobuf:"bytes,7,opt,name=size,proto3" json:"size,omitempty"`
+	CloneUrls     *CloneUrls             `protobuf:"bytes,8,opt,name=clone_urls,json=cloneUrls,proto3" json:"clone_urls,omitempty"`
+	ReadmeContent string                 `protobuf:"bytes,9,opt,name=readme_content,json=readmeContent,proto3" json:"readme_content,omitempty"`
+	CreatedAt     string                 `protobuf:"bytes,10,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt     string                 `protobuf:"bytes,11,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1080,13 +1079,6 @@ func (x *Dataset) GetDefaultBranch() string {
 func (x *Dataset) GetNumRows() string {
 	if x != nil {
 		return x.NumRows
-	}
-	return ""
-}
-
-func (x *Dataset) GetLicense() string {
-	if x != nil {
-		return x.License
 	}
 	return ""
 }
@@ -1200,24 +1192,23 @@ const file_v1alpha1_dataset_proto_rawDesc = "" +
 	"\x16GetDatasetBlobResponse\x12\x10\n" +
 	"\x03lfs\x18\x01 \x01(\bR\x03lfs\x12\x18\n" +
 	"\acontent\x18\x02 \x01(\tR\acontent\x12\x10\n" +
-	"\x03url\x18\x03 \x01(\tR\x03url\"\x8d\x03\n" +
+	"\x03url\x18\x03 \x01(\tR\x03url\"\xf3\x02\n" +
 	"\aDataset\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x05R\x02id\x12\x18\n" +
 	"\aproject\x18\x02 \x01(\tR\aproject\x12\x12\n" +
 	"\x04name\x18\x03 \x01(\tR\x04name\x12%\n" +
 	"\x0edefault_branch\x18\x04 \x01(\tR\rdefaultBranch\x12\x19\n" +
-	"\bnum_rows\x18\x05 \x01(\tR\anumRows\x12\x18\n" +
-	"\alicense\x18\x06 \x01(\tR\alicense\x121\n" +
-	"\x06labels\x18\a \x03(\v2\x19.matrixhub.v1alpha1.LabelR\x06labels\x12\x12\n" +
-	"\x04size\x18\b \x01(\tR\x04size\x12<\n" +
+	"\bnum_rows\x18\x05 \x01(\tR\anumRows\x121\n" +
+	"\x06labels\x18\x06 \x03(\v2\x19.matrixhub.v1alpha1.LabelR\x06labels\x12\x12\n" +
+	"\x04size\x18\a \x01(\tR\x04size\x12<\n" +
 	"\n" +
-	"clone_urls\x18\t \x01(\v2\x1d.matrixhub.v1alpha1.CloneUrlsR\tcloneUrls\x12%\n" +
-	"\x0ereadme_content\x18\n" +
-	" \x01(\tR\rreadmeContent\x12\x1d\n" +
+	"clone_urls\x18\b \x01(\v2\x1d.matrixhub.v1alpha1.CloneUrlsR\tcloneUrls\x12%\n" +
+	"\x0ereadme_content\x18\t \x01(\tR\rreadmeContent\x12\x1d\n" +
 	"\n" +
-	"created_at\x18\v \x01(\tR\tcreatedAt\x12\x1d\n" +
+	"created_at\x18\n" +
+	" \x01(\tR\tcreatedAt\x12\x1d\n" +
 	"\n" +
-	"updated_at\x18\f \x01(\tR\tupdatedAt2\xa1\f\n" +
+	"updated_at\x18\v \x01(\tR\tupdatedAt2\xa1\f\n" +
 	"\bDatasets\x12\xa8\x01\n" +
 	"\x15ListDatasetTaskLabels\x120.matrixhub.v1alpha1.ListDatasetTaskLabelsRequest\x1a1.matrixhub.v1alpha1.ListDatasetTaskLabelsResponse\"*\x82\xd3\xe4\x93\x02$\x12\"/api/v1alpha1/datasets/task-labels\x12\x81\x01\n" +
 	"\fListDatasets\x12'.matrixhub.v1alpha1.ListDatasetsRequest\x1a(.matrixhub.v1alpha1.ListDatasetsResponse\"\x1e\x82\xd3\xe4\x93\x02\x18\x12\x16/api/v1alpha1/datasets\x12\x81\x01\n" +

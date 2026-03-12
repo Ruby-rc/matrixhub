@@ -164,11 +164,10 @@ message Dataset {
   string name = 3;
   string default_branch = 4;
   string num_rows = 5;
-  string license = 6;
-  repeated Label labels = 7;
-  string size = 8;
-  CloneUrls clone_urls = 9;
-  string readme_content = 10;
-  string created_at = 11;
-  string updated_at = 12;
+  repeated Label labels = 6;
+  string size = 7;
+  CloneUrls clone_urls = 8;
+  string readme_content = 9;
+  string created_at = 10;
+  string updated_at = 11;
 }

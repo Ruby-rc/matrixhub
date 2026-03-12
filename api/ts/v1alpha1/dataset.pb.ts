@@ -108,7 +108,6 @@ export type Dataset = {
   name?: string
   defaultBranch?: string
   numRows?: string
-  license?: string
   labels?: MatrixhubV1alpha1Model.Label[]
   size?: string
   cloneUrls?: MatrixhubV1alpha1Model.CloneUrls

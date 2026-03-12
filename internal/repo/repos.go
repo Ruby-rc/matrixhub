@@ -17,6 +17,7 @@ package repo
 import (
 	"gorm.io/gorm"
 
+	"github.com/matrixhub-ai/matrixhub/internal/domain/dataset"
 	"github.com/matrixhub-ai/matrixhub/internal/domain/git"
 	"github.com/matrixhub-ai/matrixhub/internal/domain/model"
 	"github.com/matrixhub-ai/matrixhub/internal/domain/project"
@@ -35,6 +36,7 @@ type Repos struct {
 	Model   model.IModelRepo
 	Label   model.ILabelRepo
 	Git     git.IGitRepo
+	Dataset dataset.IDatasetRepo
 }
 
 func NewRepos(conf *config.Config) *Repos {
@@ -53,6 +55,7 @@ func NewRepos(conf *config.Config) *Repos {
 	repos.Model = NewModelDB(repos.DB)
 	repos.Label = NewLabelDB(repos.DB)
 	repos.Git = NewGitDB() // TODO: inject GitRepo implementation
+	repos.Dataset = NewDatasetDB(repos.DB)
 
 	return repos
 }

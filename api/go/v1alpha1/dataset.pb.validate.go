@@ -2348,8 +2348,6 @@ func (m *Dataset) validate(all bool) error {
 
 	// no validation rules for NumRows
 
-	// no validation rules for License
-
 	for idx, item := range m.GetLabels() {
 		_, _ = idx, item
 
