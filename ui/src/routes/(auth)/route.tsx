@@ -34,7 +34,7 @@ import { use } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import LogoIcon from '@/assets/svgs/logo.svg?react'
-import { AuthContext } from '@/context/auth'
+import { CurrentUserContext } from '@/context/current-user-context.tsx'
 import { Route as DatasetsRoute } from '@/routes/(auth)/(app)/datasets'
 import { Route as CreateDatasetRoute } from '@/routes/(auth)/(app)/datasets/new'
 import { Route as ModelsRoute } from '@/routes/(auth)/(app)/models'
@@ -168,7 +168,7 @@ function AppNavbar() {
 
 function AccountMenu() {
   const { t } = useTranslation()
-  const { user } = use(AuthContext)
+  const user = use(CurrentUserContext)
 
   const baseMenuItems = linkOptions([
     {
@@ -257,8 +257,13 @@ function AccountMenu() {
 }
 
 function AuthLayout() {
-  const pathname = useRouterState({
-    select: state => state.location.pathname,
+  const catchBoundaryResetKey = useRouterState({
+    select: state => [
+      state.location.href,
+      state.resolvedLocation?.href ?? '',
+      state.status,
+      state.loadedAt,
+    ].join('|'),
   })
 
   return (
@@ -300,9 +305,9 @@ function AuthLayout() {
           },
         }}
       >
-
         <CatchBoundary
-          getResetKey={() => pathname}
+          key={catchBoundaryResetKey}
+          getResetKey={() => catchBoundaryResetKey}
           errorComponent={({ error }) => {
             if (isForbiddenRouteError(error)) {
               return (

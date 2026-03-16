@@ -34,10 +34,10 @@ export function isNotFoundRouteError(error: unknown): error is NotFoundRouteErro
 }
 
 // ─── Auth cache ───────────────────────────────────────────────────────────────
-// Caches in-flight and resolved promises for 30 seconds so that multiple
+// Caches in-flight and resolved promises for 3 minutes so that multiple
 // beforeLoad / loader hooks in the same navigation share the same request.
 
-const CACHE_TTL = 30_000
+const CACHE_TTL = 180_000
 
 interface CacheEntry<T> {
   promise: Promise<T>
@@ -90,10 +90,20 @@ export function invalidateAuthCache() {
 
 // ─── Access guard ─────────────────────────────────────────────────────────────
 
+interface EnsureProjectAccessOptions {
+  allowPublicRead?: boolean
+  allowedRoles?: readonly ProjectRoleType[]
+}
+
 export async function ensureProjectAccess(
   projectId: string,
-  allowedRoles?: readonly ProjectRoleType[],
+  options?: EnsureProjectAccessOptions,
 ) {
+  const {
+    allowPublicRead = false,
+    allowedRoles,
+  } = options ?? {}
+
   const [currentUser, projectRoles] = await Promise.all([
     getCachedUser(),
     getCachedProjectRoles(),
@@ -110,6 +120,10 @@ export async function ensureProjectAccess(
     const project = await Projects.GetProject({ name: projectId })
 
     if (project.type === ProjectType.PROJECT_TYPE_PUBLIC) {
+      if (allowPublicRead) {
+        return
+      }
+
       // 403
       throw new ForbiddenRouteError()
     } else {

@@ -5,7 +5,7 @@ import { lazy, Suspense } from 'react'
 
 import { CurrentUserContext } from '@/context/current-user-context'
 import i18n from '@/i18n'
-import { AuthProvider } from '@/provider/auth'
+import { getCachedUser } from '@/utils/routerAccess'
 
 import type { QueryClient } from '@tanstack/react-query'
 
@@ -40,9 +40,11 @@ export const Route = createRootRouteWithContext<{
   queryClient: QueryClient
 }>()({
   loader: async () => {
-    // TODO: Add error handling
-    // return await CurrentUser.GetCurrentUser({})
-    return { username: 'Admin' }
+    try {
+      return await getCachedUser()
+    } catch {
+      return undefined
+    }
   },
   component: RootComponent,
   head: () => ({
@@ -62,8 +64,7 @@ function RootComponent() {
   const user = Route.useLoaderData()
 
   return (
-    // TODO FIX
-    <AuthProvider>
+    <>
       <HeadContent />
       <CurrentUserContext value={user}>
         <Outlet />
@@ -71,6 +72,6 @@ function RootComponent() {
       <Suspense fallback={null}>
         <TanStackDevtools />
       </Suspense>
-    </AuthProvider>
+    </>
   )
 }

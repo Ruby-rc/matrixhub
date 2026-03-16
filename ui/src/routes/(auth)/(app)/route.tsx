@@ -4,8 +4,6 @@ import {
   Outlet,
 } from '@tanstack/react-router'
 
-import { ProjectRolesProvider } from '@/provider/projectRoles'
-
 export const Route = createFileRoute('/(auth)/(app)')({
   component: AppLayout,
 })
@@ -23,9 +21,7 @@ function AppLayout() {
         boxSizing: 'content-box',
       }}
     >
-      <ProjectRolesProvider>
-        <Outlet />
-      </ProjectRolesProvider>
+      <Outlet />
     </Box>
   )
 }
