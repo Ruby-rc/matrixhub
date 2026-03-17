@@ -156,9 +156,7 @@ export type CloneUrls = {
 }
 
 export type Revision = {
-  id?: string
   name?: string
-  createdAt?: string
 }
 
 export type Commit = {
