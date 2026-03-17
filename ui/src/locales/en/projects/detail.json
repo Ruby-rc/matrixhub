@@ -1,9 +1,0 @@
-{
-  "project": "Project",
-  "tabs": {
-    "models": "Model Repository",
-    "datasets": "Datasets",
-    "members": "Project Members",
-    "settings": "Settings"
-  }
-}

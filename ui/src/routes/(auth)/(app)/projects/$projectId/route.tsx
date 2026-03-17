@@ -1,12 +1,12 @@
 import {
-  Box, Group, Select, Tabs, Text,
+  Box, Group, Select, Space, Tabs, Text,
 } from '@mantine/core'
 import { Projects } from '@matrixhub/api-ts/v1alpha1/project.pb'
 import {
   createFileRoute,
   notFound,
   Outlet,
-  useLocation,
+  useMatchRoute,
   useNavigate,
 } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
@@ -77,15 +77,20 @@ function RouteComponent() {
   const { projectOptions } = Route.useLoaderData()
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const location = useLocation()
+  const matchRoute = useMatchRoute()
 
   const activeTabRoute
-    = tabRoutes.find(tab => location.pathname.includes(`/${tab.value}`))
-      ?? tabRoutes[0]
+    = tabRoutes.find(tab => !!matchRoute({
+      to: tab.to,
+      params: { projectId },
+      fuzzy: true,
+    }))
+    ?? tabRoutes[0]
   const activeTabLabel = t(`projects.detail.tabs.${activeTabRoute.value}`)
 
   return (
     <Box>
+      <Space h="lg" />
       <Group gap={4} wrap="nowrap">
         <ProjectIcon width={20} height={20} style={{ color: 'var(--mantine-gray-7)' }} />
         <Text size="md" c="gray.8">{t('projects.detail.project')}</Text>
