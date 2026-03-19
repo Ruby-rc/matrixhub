@@ -2,13 +2,13 @@ import { createFileRoute } from '@tanstack/react-router'
 import { z } from 'zod'
 
 import { modelsQueryOptions } from '@/features/models/models.query'
-import { ModelsPage } from '@/features/models/pages/ModelsPage'
+import { ProjectModelsPage } from '@/features/projects/pages/ProjectModelsPage'
 
 // -- URL search schema (route concern) --
 
 const modelsSearchSchema = z.object({
   q: z.string().transform(v => v.trim()).catch(''),
-  sort: z.enum(['updatedAt', 'downloads']).catch('updatedAt'),
+  sort: z.literal('updatedAt').catch('updatedAt'),
   order: z.enum(['asc', 'desc']).catch('desc'),
   page: z.coerce.number().int().positive().catch(1),
 })
@@ -18,7 +18,7 @@ const modelsSearchSchema = z.object({
 export const Route = createFileRoute(
   '/(auth)/(app)/projects/$projectId/models/',
 )({
-  validateSearch: search => modelsSearchSchema.parse(search),
+  validateSearch: modelsSearchSchema,
   loaderDeps: ({ search }) => search,
   loader: async ({
     context,
@@ -35,5 +35,5 @@ export const Route = createFileRoute(
 // -- Component --
 
 function RouteComponent() {
-  return <ModelsPage />
+  return <ProjectModelsPage />
 }

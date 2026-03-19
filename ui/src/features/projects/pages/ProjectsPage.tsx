@@ -7,11 +7,9 @@ import {
 } from '@mantine/core'
 import {
   getRouteApi,
-  useRouter,
   useRouterState,
 } from '@tanstack/react-router'
 import {
-  startTransition,
   useCallback,
   useMemo,
   useState,
@@ -28,7 +26,6 @@ const projectsRouteApi = getRouteApi('/(auth)/(app)/projects/')
 
 export function ProjectsPage() {
   const { t } = useTranslation()
-  const router = useRouter()
   const navigate = projectsRouteApi.useNavigate()
   const search = projectsRouteApi.useSearch()
   const {
@@ -79,21 +76,16 @@ export function ProjectsPage() {
 
   const handleRefresh = useCallback(() => {
     setRowSelection({})
-    void router.invalidate({
-      filter: match => match.routeId === '/(auth)/(app)/projects/',
-      sync: true,
-    })
-  }, [router])
+    // TODO： refresh projects list, currently we rely on router's loading state which is not ideal
+  }, [])
 
   const handlePageChange = useCallback((page: number) => {
     setRowSelection({})
-    startTransition(() => {
-      void navigate({
-        search: prev => ({
-          ...prev,
-          page,
-        }),
-      })
+    void navigate({
+      search: prev => ({
+        ...prev,
+        page,
+      }),
     })
   }, [navigate])
 

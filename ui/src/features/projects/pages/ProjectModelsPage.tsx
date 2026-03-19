@@ -36,21 +36,17 @@ import { SortDropdown } from '@/shared/components/SortDropdown'
 
 import type { SortDropdownOption } from '@/shared/components/SortDropdown'
 
-const modelsRouteApi = getRouteApi('/(auth)/(app)/projects/$projectId/models/')
+const projectModelsRouteApi = getRouteApi('/(auth)/(app)/projects/$projectId/models/')
 
-function isSortField(value: string): value is 'updatedAt' | 'downloads' {
-  return value === 'updatedAt' || value === 'downloads'
-}
-
-export function ModelsPage() {
-  const { projectId } = modelsRouteApi.useParams()
-  const navigate = modelsRouteApi.useNavigate()
+export function ProjectModelsPage() {
+  const { projectId } = projectModelsRouteApi.useParams()
+  const navigate = projectModelsRouteApi.useNavigate()
   const {
     q: query,
     sort: sortField,
     order: sortOrder,
     page,
-  } = modelsRouteApi.useSearch()
+  } = projectModelsRouteApi.useSearch()
   const { t } = useTranslation()
 
   const {
@@ -164,7 +160,7 @@ export function ModelsPage() {
                   replace: true,
                   search: prev => ({
                     ...prev,
-                    sort: isSortField(nextField) ? nextField : prev.sort,
+                    sort: nextField === 'updatedAt' ? nextField : prev.sort,
                     order: sortOrder,
                     page: 1,
                   }),
@@ -221,40 +217,7 @@ export function ModelsPage() {
           total={total}
           totalPages={totalPages}
           page={page}
-          totalLabelProps={{
-            size: '14px',
-            lh: '20px',
-            fw: 600,
-            c: 'gray.6',
-          }}
-          paginationProps={{
-            withControls: false,
-            boundaries: 1,
-            siblings: 2,
-            color: 'cyan',
-            size: 20,
-            radius: 4,
-            gap: 8,
-            styles: {
-              control: {
-                minWidth: 20,
-                height: 20,
-                fontSize: '12px',
-                fontWeight: 400,
-                lineHeight: '16px',
-                borderColor: 'var(--mantine-color-gray-3)',
-                color: 'var(--mantine-color-gray-8)',
-              },
-              dots: {
-                minWidth: 20,
-                height: 20,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'var(--mantine-color-gray-8)',
-              },
-            },
-          }}
+          paginationProps={{ withControls: false }}
           onPageChange={(nextPage) => {
             void navigate({
               search: prev => ({
@@ -263,7 +226,6 @@ export function ModelsPage() {
               }),
             })
           }}
-          totalLabel={t('shared.total', { count: total })}
         />
       </Stack>
     </Box>

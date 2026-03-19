@@ -7,9 +7,11 @@ import {
 
 export const PAGE_SIZE = 6
 
+export type ModelsSortField = 'updatedAt'
+
 export interface ModelsSearch {
   q: string
-  sort: string
+  sort: ModelsSortField
   order: 'asc' | 'desc'
   page: number
 }
@@ -58,13 +60,8 @@ export function useModels(projectId: string, search: ModelsSearch) {
 
 // -- Internal helpers --
 
-function toSortParam(field: string, order: ModelsSearch['order']) {
-  switch (field) {
-    case 'updatedAt':
-      return order === 'asc' ? 'updated_at_asc' : 'updated_at_desc'
-    case 'downloads':
-    default:
-      // downloads sorting is not yet supported by the API, fall back to updatedAt
-      return order === 'asc' ? 'updated_at_asc' : 'updated_at_desc'
-  }
+function toSortParam(field: ModelsSearch['sort'], order: ModelsSearch['order']) {
+  return field === 'updatedAt' && order === 'asc'
+    ? 'updated_at_asc'
+    : 'updated_at_desc'
 }

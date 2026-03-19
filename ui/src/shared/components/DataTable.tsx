@@ -400,7 +400,6 @@ export function DataTable<TData extends MRT_RowData>({
         totalPages={totalPages}
         page={page}
         onPageChange={onPageChange}
-        totalLabel={t('shared.total', { count: pagination?.total ?? 0 })}
       />
     </Stack>
   )

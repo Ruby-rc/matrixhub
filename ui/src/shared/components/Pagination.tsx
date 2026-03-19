@@ -6,6 +6,7 @@ import {
   type TextProps,
 } from '@mantine/core'
 import { startTransition } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import type { ReactNode } from 'react'
 
@@ -31,20 +32,20 @@ export function Pagination({
   totalLabelProps,
   paginationProps,
 }: PaginationProps) {
+  const { t } = useTranslation()
+
   if (total <= 0 || totalPages <= 1) {
     return null
   }
 
+  const totalLabelDisplay = totalLabel ?? t('shared.total', { count: total })
+
   return (
-    <Group justify="space-between" py="sm">
-      {totalLabel && (
-        <Text size="sm" fw={500} c="dimmed" {...totalLabelProps}>
-          {totalLabel}
-        </Text>
-      )}
+    <Group justify="space-between" px="sm" py="xs">
+      <Text size="sm" fw={600} c="gray.6" lh="sm" {...totalLabelProps}>
+        {totalLabelDisplay}
+      </Text>
       <MantinePagination
-        size="xs"
-        radius="sm"
         {...paginationProps}
         value={page}
         onChange={(nextPage) => {
