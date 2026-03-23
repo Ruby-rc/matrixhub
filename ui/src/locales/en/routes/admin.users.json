@@ -4,6 +4,10 @@
   "toolbar": {
     "create": "Create User"
   },
+  "form": {
+    "username": "Username",
+    "password": "Password"
+  },
   "table": {
     "username": "Username",
     "admin": "Platform Admin",
@@ -24,5 +28,44 @@
     "revokeAdmin": "Revoke Admin",
     "resetPassword": "Reset Password",
     "delete": "Delete"
+  },
+  "createModal": {
+    "title": "Create User",
+    "description": "Create a local user account by setting a username and password.",
+    "submit": "Create User"
+  },
+  "resetPasswordModal": {
+    "title": "Reset Password",
+    "description": "Set a new password for {{username}}.",
+    "submit": "Reset Password"
+  },
+  "deleteModal": {
+    "title": "Delete User",
+    "description": "Delete {{username}}? This action cannot be undone.",
+    "submit": "Delete"
+  },
+  "batchDeleteModal": {
+    "title": "Delete Selected Users",
+    "description": "Delete {{count}} selected users? This action cannot be undone.",
+    "submit": "Delete {{count}} Users",
+    "more": "{{count}} more users"
+  },
+  "validation": {
+    "usernameRequired": "Username is required",
+    "passwordRequired": "Password is required"
+  },
+  "notifications": {
+    "createSuccess": "User created",
+    "createError": "Failed to create user",
+    "resetPasswordSuccess": "Password reset",
+    "resetPasswordError": "Failed to reset password",
+    "deleteSuccess": "User deleted",
+    "deleteError": "Failed to delete user",
+    "batchDeleteSuccess": "Selected users deleted",
+    "batchDeleteError": "Failed to delete selected users"
+  },
+  "errors": {
+    "missingUserId": "User ID is missing",
+    "noUsersSelected": "No users selected for deletion"
   }
 }

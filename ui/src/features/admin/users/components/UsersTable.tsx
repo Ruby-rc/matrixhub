@@ -20,9 +20,12 @@ type UserCellProps = Parameters<NonNullable<MRT_ColumnDef<User>['Cell']>>[0]
 
 interface UsersTableMeta {
   onDelete?: (user: User) => void
+  onResetPassword?: (user: User) => void
 }
 
-type UsersTableProps = TableProps<User>
+type UsersTableProps = TableProps<User> & {
+  onResetPassword: (user: User) => void
+}
 
 function UserAdminCell({ row }: UserCellProps) {
   const { t } = useTranslation()
@@ -67,7 +70,10 @@ function UserActionsCell({
     ? t('routes.admin.users.actions.revokeAdmin')
     : t('routes.admin.users.actions.setAdmin')
 
-  const onDelete = (table.options.meta as UsersTableMeta | undefined)?.onDelete
+  const meta = table.options.meta as UsersTableMeta | undefined
+  const onDelete = meta?.onDelete
+  const onResetPassword = meta?.onResetPassword
+  const actionDisabled = row.original.id == null
 
   return (
     <Group gap={4} wrap="nowrap">
@@ -82,16 +88,17 @@ function UserActionsCell({
       <Button
         variant="transparent"
         size="compact-sm"
-        disabled
+        disabled={actionDisabled}
         color="blue"
+        onClick={() => onResetPassword?.(row.original)}
       >
         {t('routes.admin.users.actions.resetPassword')}
       </Button>
       <Button
         variant="transparent"
         size="compact-sm"
-        color="blue"
-        disabled
+        color="red"
+        disabled={actionDisabled}
         onClick={() => onDelete?.(row.original)}
       >
         {t('routes.admin.users.actions.delete')}
@@ -109,6 +116,7 @@ export function UsersTable({
   onSearchChange,
   onRefresh,
   onDelete,
+  onResetPassword,
   onBatchDelete,
   rowSelection,
   onRowSelectionChange,
@@ -178,7 +186,10 @@ export function UsersTable({
       tableOptions={{
         enableBatchRowSelection: true,
         enableMultiRowSelection: true,
-        meta: { onDelete },
+        meta: {
+          onDelete,
+          onResetPassword,
+        },
       }}
     />
   )

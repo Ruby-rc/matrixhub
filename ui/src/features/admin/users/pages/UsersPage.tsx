@@ -8,10 +8,18 @@ import {
   getRouteApi,
   useRouterState,
 } from '@tanstack/react-router'
+import {
+  useMemo,
+  useState,
+} from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { useRouteListState } from '@/shared/hooks/useRouteListState'
 
+import { BatchDeleteUsersModal } from '../components/BatchDeleteUsersModal'
+import { CreateUserModal } from '../components/CreateUserModal'
+import { DeleteUserModal } from '../components/DeleteUserModal'
+import { ResetUserPasswordModal } from '../components/ResetUserPasswordModal'
 import { UsersTable } from '../components/UsersTable'
 import {
   adminUserKeys,
@@ -29,6 +37,10 @@ export function UsersPage() {
   const queryClient = useQueryClient()
   const navigate = usersRouteApi.useNavigate()
   const search = usersRouteApi.useSearch()
+  const [createModalOpened, setCreateModalOpened] = useState(false)
+  const [resetPasswordUser, setResetPasswordUser] = useState<User | null>(null)
+  const [deleteUser, setDeleteUser] = useState<User | null>(null)
+  const [batchDeleteUsers, setBatchDeleteUsers] = useState<User[] | null>(null)
   const {
     data,
     isFetching,
@@ -49,7 +61,9 @@ export function UsersPage() {
   const {
     rowSelection,
     setRowSelection,
+    clearRowSelection,
     selectedCount,
+    selectedRowIds,
     handleSearchChange,
     handleRefresh,
     handlePageChange,
@@ -61,46 +75,100 @@ export function UsersPage() {
     refresh: refreshUsers,
   })
 
+  const selectedUsers = useMemo(() => {
+    const selectedIds = new Set(selectedRowIds)
+
+    return users.filter(user => selectedIds.has(getUserRowId(user)))
+  }, [selectedRowIds, users])
+
   const handleCreate = () => {
-    // TODO: open create user modal
+    setCreateModalOpened(true)
   }
 
-  const handleDelete = (_user: User) => {
-    // TODO: Implement delete functionality
+  const handleResetPassword = (user: User) => {
+    setResetPasswordUser(user)
+  }
+
+  const handleDelete = (user: User) => {
+    setDeleteUser(user)
   }
 
   const handleBatchDelete = () => {
-    if (selectedCount === 0) {
+    if (selectedUsers.length === 0) {
       return
     }
 
-    // TODO: open batch delete user modal
+    setBatchDeleteUsers(selectedUsers)
   }
 
   return (
-    <UsersTable
-      records={users}
-      pagination={pagination}
-      loading={loading}
-      page={search.page ?? DEFAULT_USERS_PAGE}
-      searchValue={search.query ?? ''}
-      onSearchChange={handleSearchChange}
-      onRefresh={handleRefresh}
-      onDelete={handleDelete}
-      onBatchDelete={handleBatchDelete}
-      rowSelection={rowSelection}
-      onRowSelectionChange={setRowSelection}
-      onPageChange={handlePageChange}
-      selectedCount={selectedCount}
-      toolbarExtra={(
-        <Button
-          disabled
-          onClick={handleCreate}
-          leftSection={<IconUserPlus size={16} />}
-        >
-          {t('routes.admin.users.toolbar.create')}
-        </Button>
+    <>
+      <UsersTable
+        records={users}
+        pagination={pagination}
+        loading={loading}
+        page={search.page ?? DEFAULT_USERS_PAGE}
+        searchValue={search.query ?? ''}
+        onSearchChange={handleSearchChange}
+        onRefresh={handleRefresh}
+        onDelete={handleDelete}
+        onResetPassword={handleResetPassword}
+        onBatchDelete={handleBatchDelete}
+        rowSelection={rowSelection}
+        onRowSelectionChange={setRowSelection}
+        onPageChange={handlePageChange}
+        selectedCount={selectedCount}
+        toolbarExtra={(
+          <Button
+            onClick={handleCreate}
+            leftSection={<IconUserPlus size={16} />}
+          >
+            {t('routes.admin.users.toolbar.create')}
+          </Button>
+        )}
+      />
+
+      {createModalOpened && (
+        <CreateUserModal
+          opened={createModalOpened}
+          onClose={() => {
+            setCreateModalOpened(false)
+          }}
+        />
       )}
-    />
+
+      {resetPasswordUser && (
+        <ResetUserPasswordModal
+          opened
+          user={resetPasswordUser}
+          onClose={() => {
+            setResetPasswordUser(null)
+          }}
+        />
+      )}
+
+      {deleteUser && (
+        <DeleteUserModal
+          opened
+          user={deleteUser}
+          onClose={() => {
+            setDeleteUser(null)
+          }}
+        />
+      )}
+
+      {batchDeleteUsers && batchDeleteUsers.length > 0 && (
+        <BatchDeleteUsersModal
+          opened
+          users={batchDeleteUsers}
+          onClose={() => {
+            setBatchDeleteUsers(null)
+          }}
+          onSuccess={() => {
+            clearRowSelection()
+          }}
+        />
+      )}
+    </>
   )
 }
