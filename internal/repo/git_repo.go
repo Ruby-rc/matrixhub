@@ -96,8 +96,7 @@ func isCommitSHA(s string) bool {
 }
 
 // CreateRepository initializes a Git repository
-func (g *gitRepo) CreateRepository(ctx context.Context, project, name string) error {
-	repoType := "models"
+func (g *gitRepo) CreateRepository(ctx context.Context, repoType, project, name string) error {
 	gitPath := g.gitPath(repoType, project, name)
 	if repository.IsRepository(gitPath) {
 		return fmt.Errorf("repository already exists at %s", gitPath)
@@ -130,8 +129,7 @@ func (g *gitRepo) CreateRepository(ctx context.Context, project, name string) er
 }
 
 // DeleteRepository removes the Git repository
-func (g *gitRepo) DeleteRepository(ctx context.Context, project, name string) error {
-	repoType := "models"
+func (g *gitRepo) DeleteRepository(ctx context.Context, repoType, project, name string) error {
 	gitPath := g.gitPath(repoType, project, name)
 	if !repository.IsRepository(gitPath) {
 		return fmt.Errorf("repository does not exist at %s", gitPath)
@@ -144,8 +142,7 @@ func (g *gitRepo) DeleteRepository(ctx context.Context, project, name string) er
 }
 
 // ListRevisions returns all branches and tags for a model
-func (g *gitRepo) ListRevisions(ctx context.Context, project, name string) (*git.Revisions, error) {
-	repoType := "models"
+func (g *gitRepo) ListRevisions(ctx context.Context, repoType, project, name string) (*git.Revisions, error) {
 	gitPath := g.gitPath(repoType, project, name)
 	if !repository.IsRepository(gitPath) {
 		return nil, fmt.Errorf("repository does not exist at %s", gitPath)
@@ -183,8 +180,7 @@ func (g *gitRepo) ListRevisions(ctx context.Context, project, name string) (*git
 }
 
 // ListCommits returns the commit history for a model
-func (g *gitRepo) ListCommits(ctx context.Context, project, name, revision string, page, pageSize int) ([]*git.Commit, int64, error) {
-	repoType := "models"
+func (g *gitRepo) ListCommits(ctx context.Context, repoType, project, name, revision string, page, pageSize int) ([]*git.Commit, int64, error) {
 	gitPath := g.gitPath(repoType, project, name)
 	if !repository.IsRepository(gitPath) {
 		return nil, 0, fmt.Errorf("repository does not exist at %s", gitPath)
@@ -228,8 +224,7 @@ func (g *gitRepo) ListCommits(ctx context.Context, project, name, revision strin
 }
 
 // GetCommit returns a specific commit by ID
-func (g *gitRepo) GetCommit(ctx context.Context, project, name, commitID string) (*git.Commit, error) {
-	repoType := "models"
+func (g *gitRepo) GetCommit(ctx context.Context, repoType, project, name, commitID string) (*git.Commit, error) {
 	gitPath := g.gitPath(repoType, project, name)
 	if !repository.IsRepository(gitPath) {
 		return nil, fmt.Errorf("repository does not exist at %s", gitPath)
@@ -266,8 +261,7 @@ func (g *gitRepo) GetCommit(ctx context.Context, project, name, commitID string)
 }
 
 // GetTree returns the file tree at a specific revision and path
-func (g *gitRepo) GetTree(ctx context.Context, project, name, revision, path string) ([]*git.TreeEntry, error) {
-	repoType := "models"
+func (g *gitRepo) GetTree(ctx context.Context, repoType, project, name, revision, path string) ([]*git.TreeEntry, error) {
 	gitPath := g.gitPath(repoType, project, name)
 	if !repository.IsRepository(gitPath) {
 		return nil, fmt.Errorf("repository does not exist at %s", gitPath)
@@ -342,8 +336,7 @@ func (g *gitRepo) GetTree(ctx context.Context, project, name, revision, path str
 }
 
 // GetBlob returns the content of a file at a specific revision
-func (g *gitRepo) GetBlob(ctx context.Context, project, name, revision, path string) (*git.TreeEntry, error) {
-	repoType := "models"
+func (g *gitRepo) GetBlob(ctx context.Context, repoType, project, name, revision, path string) (*git.TreeEntry, error) {
 	gitPath := g.gitPath(repoType, project, name)
 	if !repository.IsRepository(gitPath) {
 		return nil, fmt.Errorf("repository does not exist at %s", gitPath)

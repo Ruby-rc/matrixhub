@@ -87,7 +87,7 @@ func (s *ModelService) CreateModel(ctx context.Context, project, name string) (*
 		ProjectName: project,
 	}
 
-	if err := s.gitRepo.CreateRepository(ctx, project, name); err != nil {
+	if err := s.gitRepo.CreateRepository(ctx, "models", project, name); err != nil {
 		return nil, err
 	}
 
@@ -133,7 +133,7 @@ func (s *ModelService) DeleteModel(ctx context.Context, project, name string) er
 	}
 
 	// First delete the Git repository, then delete the model record in the database.
-	if err := s.gitRepo.DeleteRepository(ctx, project, name); err != nil {
+	if err := s.gitRepo.DeleteRepository(ctx, "models", project, name); err != nil {
 		return err
 	}
 
@@ -165,7 +165,7 @@ func (s *ModelService) ListModelRevisions(ctx context.Context, project, name str
 		return nil, err
 	}
 
-	return s.gitRepo.ListRevisions(ctx, project, name)
+	return s.gitRepo.ListRevisions(ctx, "models", project, name)
 }
 
 // ListModelCommits returns the commit history for a model.
@@ -192,7 +192,7 @@ func (s *ModelService) ListModelCommits(ctx context.Context, project, name, revi
 		pageSize = 20
 	}
 
-	return s.gitRepo.ListCommits(ctx, project, name, revision, page, pageSize)
+	return s.gitRepo.ListCommits(ctx, "models", project, name, revision, page, pageSize)
 }
 
 // GetModelCommit returns a specific commit by ID.
@@ -213,7 +213,7 @@ func (s *ModelService) GetModelCommit(ctx context.Context, project, name, commit
 		return nil, err
 	}
 
-	return s.gitRepo.GetCommit(ctx, project, name, commitID)
+	return s.gitRepo.GetCommit(ctx, "models", project, name, commitID)
 }
 
 // GetModelTree returns the file tree at a specific revision and path.
@@ -231,7 +231,7 @@ func (s *ModelService) GetModelTree(ctx context.Context, project, name, revision
 		return nil, err
 	}
 
-	return s.gitRepo.GetTree(ctx, project, name, revision, path)
+	return s.gitRepo.GetTree(ctx, "models", project, name, revision, path)
 }
 
 // GetModelBlob returns the content of a file at a specific revision.
@@ -249,7 +249,7 @@ func (s *ModelService) GetModelBlob(ctx context.Context, project, name, revision
 		return nil, err
 	}
 
-	return s.gitRepo.GetBlob(ctx, project, name, revision, path)
+	return s.gitRepo.GetBlob(ctx, "models", project, name, revision, path)
 }
 
 // SyncMetadata synchronizes Git repository metadata to the database.

@@ -82,7 +82,7 @@ func (s *DatasetService) CreateDataset(ctx context.Context, project, name string
 		Name: name,
 	}
 
-	if err := s.gitRepo.CreateRepository(ctx, project, name); err != nil {
+	if err := s.gitRepo.CreateRepository(ctx, "datasets", project, name); err != nil {
 		return nil, err
 	}
 
@@ -128,7 +128,7 @@ func (s *DatasetService) DeleteDataset(ctx context.Context, project, name string
 	}
 
 	// First delete the Git repository, then delete the dataset record in the database.
-	if err := s.gitRepo.DeleteRepository(ctx, project, name); err != nil {
+	if err := s.gitRepo.DeleteRepository(ctx, "datasets", project, name); err != nil {
 		return err
 	}
 
@@ -149,7 +149,7 @@ func (s *DatasetService) ListDatasetRevisions(ctx context.Context, project, name
 		return nil, errors.New("invalid input")
 	}
 
-	return s.gitRepo.ListRevisions(ctx, project, name)
+	return s.gitRepo.ListRevisions(ctx, "datasets", project, name)
 }
 
 // ListDatasetCommits returns the commit history for a dataset.
@@ -169,7 +169,7 @@ func (s *DatasetService) ListDatasetCommits(ctx context.Context, project, name, 
 		pageSize = 20
 	}
 
-	return s.gitRepo.ListCommits(ctx, project, name, revision, page, pageSize)
+	return s.gitRepo.ListCommits(ctx, "datasets", project, name, revision, page, pageSize)
 }
 
 // GetDatasetCommit returns a specific commit by ID.
@@ -184,7 +184,7 @@ func (s *DatasetService) GetDatasetCommit(ctx context.Context, project, name, co
 		return nil, errors.New("invalid input")
 	}
 
-	return s.gitRepo.GetCommit(ctx, project, name, commitID)
+	return s.gitRepo.GetCommit(ctx, "datasets", project, name, commitID)
 }
 
 // GetDatasetTree returns the file tree at a specific revision and path.
@@ -196,7 +196,7 @@ func (s *DatasetService) GetDatasetTree(ctx context.Context, project, name, revi
 		return nil, errors.New("invalid input")
 	}
 
-	return s.gitRepo.GetTree(ctx, project, name, revision, path)
+	return s.gitRepo.GetTree(ctx, "datasets", project, name, revision, path)
 }
 
 // GetDatasetBlob returns the content of a file at a specific revision.
@@ -208,5 +208,5 @@ func (s *DatasetService) GetDatasetBlob(ctx context.Context, project, name, revi
 		return nil, errors.New("invalid input")
 	}
 
-	return s.gitRepo.GetBlob(ctx, project, name, revision, path)
+	return s.gitRepo.GetBlob(ctx, "datasets", project, name, revision, path)
 }
