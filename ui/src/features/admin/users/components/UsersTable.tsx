@@ -22,9 +22,7 @@ interface UsersTableMeta {
   onDelete?: (user: User) => void
 }
 
-type UsersTableProps = Omit<DataTableProps<User>, 'columns'> & {
-  onDelete: (user: User) => void
-}
+type UsersTableProps = Omit<DataTableProps<User>, 'columns' | 'onDelete'>
 
 function UserAdminCell({ row }: UserCellProps) {
   const { t } = useTranslation()
@@ -110,7 +108,6 @@ export function UsersTable({
   searchValue,
   onSearchChange,
   onRefresh,
-  onDelete,
   onBatchDelete,
   rowSelection,
   onRowSelectionChange,
@@ -178,7 +175,6 @@ export function UsersTable({
       tableOptions={{
         enableBatchRowSelection: true,
         enableMultiRowSelection: true,
-        meta: { onDelete },
       }}
     />
   )
