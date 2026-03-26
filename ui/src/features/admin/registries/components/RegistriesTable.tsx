@@ -60,14 +60,6 @@ function RegistryStatusCell({ row }: RegistryCellProps) {
   )
 }
 
-function RegistryNameCell({ row }: RegistryCellProps) {
-  return (
-    <Text fw={500}>
-      {row.original.name ?? '-'}
-    </Text>
-  )
-}
-
 function RegistryUrlCell({ row }: RegistryCellProps) {
   const url = row.original.url
 
@@ -151,7 +143,7 @@ export function RegistriesTable({
     {
       accessorKey: 'name',
       header: t('routes.admin.registries.table.name'),
-      Cell: RegistryNameCell,
+      accessorFn: row => row.name ?? '-',
     },
     {
       id: 'status',
