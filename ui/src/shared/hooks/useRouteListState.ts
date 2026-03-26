@@ -45,12 +45,19 @@ export function useRouteListState<TSearch extends RouteListSearchState, TRecord>
   const currentRecordIds = new Set(records.map(record => getRecordId(record)))
 
   const clearRowSelection = () => {
-    setRowSelection({})
+    setRowSelection(prev => (
+      Object.keys(prev).length === 0
+        ? prev
+        : {}
+    ))
   }
 
   const selectedRowIds = Object.keys(rowSelection).filter(
     rowId => !!rowSelection[rowId] && currentRecordIds.has(rowId),
   )
+
+  const selectedIdSet = new Set(selectedRowIds)
+  const selectedRecords = records.filter(record => selectedIdSet.has(getRecordId(record)))
 
   const selectedCount = selectedRowIds.length
   const currentQuery = normalizeQuery(search.query ?? '')
@@ -100,6 +107,7 @@ export function useRouteListState<TSearch extends RouteListSearchState, TRecord>
     clearRowSelection,
     selectedCount,
     selectedRowIds,
+    selectedRecords,
     onSearchChange,
     onRefresh,
     onPageChange,
