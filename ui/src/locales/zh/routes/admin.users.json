@@ -45,9 +45,8 @@
   },
   "batchDeleteModal": {
     "title": "批量删除用户",
-    "description": "确定要删除 {{usernames}} 等 {{count}} 个用户吗? ",
-    "submit": "删除 {{count}} 个用户",
-    "more": "其余 {{count}} 个用户"
+    "description": "确定要删除 {{usernames}} 等 {{count}} 个用户吗？",
+    "submit": "删除 {{count}} 个用户"
   },
   "validation": {
     "usernameRequired": "请输入用户名",
@@ -67,7 +66,8 @@
     "deleteSuccess": "用户删除成功",
     "deleteError": "删除用户失败",
     "batchDeleteSuccess": "批量删除用户成功",
-    "batchDeleteError": "批量删除用户失败"
+    "batchDeleteError": "批量删除用户失败",
+    "batchDeletePartialError": "已删除 {{successCount}} 个用户，{{failureCount}} 个用户删除失败"
   },
   "errors": {
     "missingUserId": "用户 ID 缺失",

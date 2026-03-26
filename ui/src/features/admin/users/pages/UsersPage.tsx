@@ -40,7 +40,6 @@ export function UsersPage() {
   const routeLoading = useRouterState({
     select: state => state.isLoading,
   })
-  const loading = routeLoading || isFetching
 
   const refreshUsers = () => queryClient.invalidateQueries({
     queryKey: adminUserKeys.lists(),
@@ -76,7 +75,8 @@ export function UsersPage() {
       <UsersTable
         data={users}
         pagination={pagination}
-        loading={loading}
+        loading={routeLoading}
+        fetching={isFetching}
         page={search.page ?? DEFAULT_USERS_PAGE}
         searchValue={search.query ?? ''}
         onSearchChange={onSearchChange}

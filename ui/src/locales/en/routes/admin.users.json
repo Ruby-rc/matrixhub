@@ -45,9 +45,8 @@
   },
   "batchDeleteModal": {
     "title": "Delete Selected Users",
-    "description": "Are you sure you want to delete {{count}} users, including {{usernames}}? ",
-    "submit": "Delete {{count}} Users",
-    "more": "{{count}} more users"
+    "description": "Are you sure you want to delete {{count}} users, including {{usernames}}?",
+    "submit": "Delete {{count}} Users"
   },
   "validation": {
     "usernameRequired": "Username is required",
@@ -67,7 +66,8 @@
     "deleteSuccess": "User deleted",
     "deleteError": "Failed to delete user",
     "batchDeleteSuccess": "Selected users deleted",
-    "batchDeleteError": "Failed to delete selected users"
+    "batchDeleteError": "Failed to delete selected users",
+    "batchDeletePartialError": "Deleted {{successCount}} users, failed to delete {{failureCount}} users"
   },
   "errors": {
     "missingUserId": "User ID is missing",

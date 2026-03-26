@@ -114,9 +114,28 @@ export function batchDeleteUsersMutationOptions() {
       }
 
       const ids = users.map(user => requireUserId(user.id))
+      // TODO: Use a backend batch-delete API when available to avoid partial-success states.
+      const results = await Promise.allSettled(
+        ids.map(id => Users.DeleteUser({ id })),
+      )
+      const failed = results.filter(
+        (result): result is PromiseRejectedResult => result.status === 'rejected',
+      )
 
-      await Promise.all(ids.map(id =>
-        Users.DeleteUser({ id })))
+      if (failed.length === 0) {
+        return
+      }
+
+      if (failed.length === ids.length) {
+        throw failed[0].reason instanceof Error
+          ? failed[0].reason
+          : new Error(String(failed[0].reason))
+      }
+
+      throw new Error(i18n.t('routes.admin.users.notifications.batchDeletePartialError', {
+        successCount: ids.length - failed.length,
+        failureCount: failed.length,
+      }))
     },
     meta: {
       successMessage: i18n.t('routes.admin.users.notifications.batchDeleteSuccess'),

@@ -9,10 +9,10 @@ import { useMutation } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 
 import { ModalWrapper } from '@/shared/components/ModalWrapper'
+import { fieldError } from '@/shared/utils/form'
 
 import { resetUserPasswordMutationOptions } from '../users.mutation'
 import { resetUserPasswordFormSchema } from '../users.schema'
-import { getFormFieldErrorMessage } from '../users.utils'
 
 import type { User } from '@matrixhub/api-ts/v1alpha1/user.pb'
 
@@ -43,10 +43,6 @@ function ResetUserPasswordModal({
       onChange: resetUserPasswordFormSchema(),
     },
     onSubmit: async ({ value }) => {
-      if (user.id == null) {
-        throw new Error(t('routes.admin.users.errors.missingUserId'))
-      }
-
       await mutation.mutateAsync({
         id: user.id,
         password: value.password,
@@ -74,7 +70,7 @@ function ResetUserPasswordModal({
               value={field.state.value}
               onChange={event => field.handleChange(event.currentTarget.value)}
               onBlur={field.handleBlur}
-              error={getFormFieldErrorMessage(field.state.meta.errors?.[0])}
+              error={fieldError(field)}
             />
           )}
         </form.Field>
@@ -88,7 +84,7 @@ function ResetUserPasswordModal({
               value={field.state.value}
               onChange={event => field.handleChange(event.currentTarget.value)}
               onBlur={field.handleBlur}
-              error={getFormFieldErrorMessage(field.state.meta.errors?.[0])}
+              error={fieldError(field)}
             />
           )}
         </form.Field>

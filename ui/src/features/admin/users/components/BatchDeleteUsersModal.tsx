@@ -21,8 +21,6 @@ interface BatchDeleteUsersModalProps {
   onSuccess: () => void
 }
 
-const PREVIEW_USER_COUNT = 5
-
 export function BatchDeleteUsersModal({
   opened,
   users,
@@ -31,7 +29,7 @@ export function BatchDeleteUsersModal({
 }: BatchDeleteUsersModalProps) {
   const { t } = useTranslation()
   const mutation = useMutation(batchDeleteUsersMutationOptions())
-  const previewUsers = users.slice(0, PREVIEW_USER_COUNT)
+  const usernames = users.map(getUserDisplayName).join(', ')
 
   const handleDelete = async () => {
     await mutation.mutateAsync(users)
@@ -58,7 +56,9 @@ export function BatchDeleteUsersModal({
             loading={mutation.isPending}
             onClick={handleDelete}
           >
-            {t('common.confirm')}
+            {t('routes.admin.users.batchDeleteModal.submit', {
+              count: users.length,
+            })}
           </Button>
         </Group>
       )}
@@ -66,7 +66,7 @@ export function BatchDeleteUsersModal({
       <Stack gap="md">
         <Text size="sm">
           {t('routes.admin.users.batchDeleteModal.description', {
-            usernames: previewUsers.map(getUserDisplayName).join(', '),
+            usernames,
             count: users.length,
           })}
         </Text>

@@ -12,10 +12,10 @@ import { useMutation } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 
 import { ModalWrapper } from '@/shared/components/ModalWrapper'
+import { fieldError } from '@/shared/utils/form'
 
 import { createUserMutationOptions } from '../users.mutation'
 import { createUserFormSchema } from '../users.schema'
-import { getFormFieldErrorMessage } from '../users.utils'
 
 interface CreateUserModalProps {
   opened: boolean
@@ -69,7 +69,7 @@ function CreateUserModal({
               value={field.state.value}
               onChange={event => field.handleChange(event.currentTarget.value)}
               onBlur={field.handleBlur}
-              error={getFormFieldErrorMessage(field.state.meta.errors?.[0])}
+              error={fieldError(field)}
             />
           )}
         </form.Field>
@@ -85,7 +85,7 @@ function CreateUserModal({
               value={field.state.value}
               onChange={event => field.handleChange(event.currentTarget.value)}
               onBlur={field.handleBlur}
-              error={getFormFieldErrorMessage(field.state.meta.errors?.[0])}
+              error={fieldError(field)}
             />
           )}
         </form.Field>
@@ -101,7 +101,7 @@ function CreateUserModal({
               value={field.state.value}
               onChange={event => field.handleChange(event.currentTarget.value)}
               onBlur={field.handleBlur}
-              error={getFormFieldErrorMessage(field.state.meta.errors?.[0])}
+              error={fieldError(field)}
             />
           )}
         </form.Field>
