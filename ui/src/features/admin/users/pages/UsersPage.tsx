@@ -1,5 +1,3 @@
-import { Button } from '@mantine/core'
-import { IconUserPlus } from '@tabler/icons-react'
 import {
   useQueryClient,
   useSuspenseQuery,
@@ -8,11 +6,13 @@ import {
   getRouteApi,
   useRouterState,
 } from '@tanstack/react-router'
-import { useTranslation } from 'react-i18next'
 
 import { useRouteListState } from '@/shared/hooks/useRouteListState'
 
+import { BatchDeleteUsersModal } from '../components/BatchDeleteUsersModal'
+import { CreateUserAction } from '../components/CreateUserAction'
 import { UsersTable } from '../components/UsersTable'
+import { usePayloadModal } from '../hooks/usePayloadModal'
 import {
   adminUserKeys,
   usersQueryOptions,
@@ -20,10 +20,11 @@ import {
 import { DEFAULT_USERS_PAGE } from '../users.schema'
 import { getUserRowId } from '../users.utils'
 
+import type { User } from '@matrixhub/api-ts/v1alpha1/user.pb'
+
 const usersRouteApi = getRouteApi('/(auth)/admin/users')
 
 export function UsersPage() {
-  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const navigate = usersRouteApi.useNavigate()
   const search = usersRouteApi.useSearch()
@@ -35,10 +36,10 @@ export function UsersPage() {
     users,
     pagination,
   } = data
+  const batchDeleteModal = usePayloadModal<User[]>()
   const routeLoading = useRouterState({
     select: state => state.isLoading,
   })
-  const loading = routeLoading || isFetching
 
   const refreshUsers = () => queryClient.invalidateQueries({
     queryKey: adminUserKeys.lists(),
@@ -47,7 +48,9 @@ export function UsersPage() {
   const {
     rowSelection,
     setRowSelection,
+    clearRowSelection,
     selectedCount,
+    selectedRecords,
     onSearchChange,
     onRefresh,
     onPageChange,
@@ -59,41 +62,43 @@ export function UsersPage() {
     refresh: refreshUsers,
   })
 
-  const handleCreate = () => {
-    // TODO: open create user modal
-  }
-
   const handleBatchDelete = () => {
-    if (selectedCount === 0) {
+    if (selectedRecords.length === 0) {
       return
     }
 
-    // TODO: open batch delete user modal
+    batchDeleteModal.open(selectedRecords)
   }
 
   return (
-    <UsersTable
-      data={users}
-      pagination={pagination}
-      loading={loading}
-      page={search.page ?? DEFAULT_USERS_PAGE}
-      searchValue={search.query ?? ''}
-      onSearchChange={onSearchChange}
-      onRefresh={onRefresh}
-      onBatchDelete={handleBatchDelete}
-      rowSelection={rowSelection}
-      onRowSelectionChange={setRowSelection}
-      onPageChange={onPageChange}
-      selectedCount={selectedCount}
-      toolbarExtra={(
-        <Button
-          disabled
-          onClick={handleCreate}
-          leftSection={<IconUserPlus size={16} />}
-        >
-          {t('routes.admin.users.toolbar.create')}
-        </Button>
+    <>
+      <UsersTable
+        data={users}
+        pagination={pagination}
+        loading={routeLoading}
+        fetching={isFetching}
+        page={search.page ?? DEFAULT_USERS_PAGE}
+        searchValue={search.query ?? ''}
+        onSearchChange={onSearchChange}
+        onRefresh={onRefresh}
+        onBatchDelete={handleBatchDelete}
+        rowSelection={rowSelection}
+        onRowSelectionChange={setRowSelection}
+        onPageChange={onPageChange}
+        selectedCount={selectedCount}
+        toolbarExtra={<CreateUserAction />}
+      />
+
+      {batchDeleteModal.opened && batchDeleteModal.payload && (
+        <BatchDeleteUsersModal
+          opened
+          users={batchDeleteModal.payload}
+          onClose={batchDeleteModal.close}
+          onSuccess={() => {
+            clearRowSelection()
+          }}
+        />
       )}
-    />
+    </>
   )
 }

@@ -1,6 +1,5 @@
 import {
   Badge,
-  Button,
   Group,
   Text,
 } from '@mantine/core'
@@ -11,6 +10,9 @@ import { useTranslation } from 'react-i18next'
 import { DataTable, type DataTableProps } from '@/shared/components/DataTable'
 import { formatDateTime } from '@/shared/utils/date'
 
+import { DeleteUserAction } from './DeleteUserAction'
+import { ResetUserPasswordAction } from './ResetUserPasswordAction'
+import { ToggleUserAdminAction } from './ToggleUserAdminAction'
 import { getUserRowId } from '../users.utils'
 
 import type { User } from '@matrixhub/api-ts/v1alpha1/user.pb'
@@ -48,48 +50,25 @@ function UserSourceCell({ row }: UserCellProps) {
   return <Text size="sm">-</Text>
 }
 
-function UserNameCell({ row }: UserCellProps) {
-  return (
-    <Text fw={500}>
-      {row.original.username ?? '-'}
-    </Text>
-  )
-}
-
 function UserActionsCell({
   row,
 }: UserRowActionsProps) {
-  const { t } = useTranslation()
-  const adminAction = row.original.isAdmin
-    ? t('routes.admin.users.actions.revokeAdmin')
-    : t('routes.admin.users.actions.setAdmin')
+  const actionDisabled = row.original.id == null
 
   return (
     <Group gap={4} wrap="nowrap">
-      <Button
-        variant="transparent"
-        size="compact-sm"
-        disabled
-        color="blue"
-      >
-        {adminAction}
-      </Button>
-      <Button
-        variant="transparent"
-        size="compact-sm"
-        disabled
-        color="blue"
-      >
-        {t('routes.admin.users.actions.resetPassword')}
-      </Button>
-      <Button
-        variant="transparent"
-        size="compact-sm"
-        color="blue"
-        disabled
-      >
-        {t('routes.admin.users.actions.delete')}
-      </Button>
+      <ToggleUserAdminAction
+        user={row.original}
+        disabled={actionDisabled}
+      />
+      <ResetUserPasswordAction
+        user={row.original}
+        disabled={actionDisabled}
+      />
+      <DeleteUserAction
+        user={row.original}
+        disabled={actionDisabled}
+      />
     </Group>
   )
 }
@@ -102,27 +81,23 @@ export function UsersTable({
 
   const columns = useMemo<MRT_ColumnDef<User>[]>(() => [
     {
-      accessorKey: 'username',
+      id: 'username',
       header: t('routes.admin.users.table.username'),
-      size: 180,
-      Cell: UserNameCell,
+      accessorFn: row => row.username ?? '-',
     },
     {
       id: 'isAdmin',
       header: t('routes.admin.users.table.admin'),
-      size: 180,
       Cell: UserAdminCell,
     },
     {
       id: 'source',
       header: t('routes.admin.users.table.source'),
-      size: 180,
       Cell: UserSourceCell,
     },
     {
       id: 'createdAt',
       header: t('routes.admin.users.table.createdAt'),
-      size: 180,
       accessorFn: row => formatDateTime(row.createdAt),
     },
 
