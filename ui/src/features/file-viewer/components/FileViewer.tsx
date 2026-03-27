@@ -53,7 +53,7 @@ export function FileViewer({
 }: FileViewerProps) {
   const category = classifyFile(file.name)
   const isMarkdown = category === 'markdown'
-  const isBinary = category === 'binary' || (!loading && !error && content == null)
+  const isReady = !loading && !error && content != null
   const [viewMode, setViewMode] = useState<ViewMode>(isMarkdown ? 'preview' : 'code')
 
   return (
@@ -65,7 +65,7 @@ export function FileViewer({
       {/* ── Toolbar: always visible ──────────────────────────── */}
       <FileToolbar
         file={file}
-        isMarkdown={isMarkdown && !isBinary}
+        isMarkdown={isMarkdown && isReady}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
       />
@@ -85,7 +85,7 @@ export function FileViewer({
                 </Alert>
               </Center>
             )
-          : isBinary
+          : category === 'binary' || content == null
             ? (
                 <FallbackCard file={file} />
               )
