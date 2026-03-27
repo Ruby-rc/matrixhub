@@ -123,7 +123,12 @@ export function batchDeleteUsersMutationOptions() {
       )
 
       if (failed.length === 0) {
-        return
+        return {
+          partial: false,
+          successCount: ids.length,
+          failureCount: 0,
+          failed: [],
+        }
       }
 
       if (failed.length === ids.length) {
@@ -132,13 +137,15 @@ export function batchDeleteUsersMutationOptions() {
           : new Error(String(failed[0].reason))
       }
 
-      throw new Error(i18n.t('routes.admin.users.notifications.batchDeletePartialError', {
+      // Partial failure: return result object, do not throw
+      return {
+        partial: true,
         successCount: ids.length - failed.length,
         failureCount: failed.length,
-      }))
+        failed,
+      }
     },
     meta: {
-      successMessage: i18n.t('routes.admin.users.notifications.batchDeleteSuccess'),
       errorMessage: i18n.t('routes.admin.users.notifications.batchDeleteError'),
       invalidates: [adminUserKeys.lists()],
     } satisfies NotificationMeta,

@@ -4,6 +4,7 @@ import {
   Stack,
   Text,
 } from '@mantine/core'
+import { notifications } from '@mantine/notifications'
 import { useMutation } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 
@@ -32,7 +33,22 @@ export function BatchDeleteUsersModal({
   const usernames = users.map(getUserDisplayName).join(', ')
 
   const handleDelete = async () => {
-    await mutation.mutateAsync(users)
+    const res = await mutation.mutateAsync(users)
+
+    if (res && res.partial) {
+      notifications.show({
+        color: 'yellow',
+        message: t('routes.admin.users.notifications.batchDeletePartialError', {
+          successCount: res.successCount,
+          failureCount: res.failureCount,
+        }),
+      })
+    } else {
+      notifications.show({
+        color: 'green',
+        message: t('routes.admin.users.notifications.batchDeleteSuccess'),
+      })
+    }
     onSuccess()
     onClose()
   }
