@@ -1,6 +1,7 @@
 import {
   type CreateRegistryRequest,
   type PingRegistryRequest,
+  type DeleteRegistryRequest,
   Registries,
   type UpdateRegistryRequest,
 } from '@matrixhub/api-ts/v1alpha1/registry.pb'
@@ -47,7 +48,7 @@ export function updateRegistryMutationOptions() {
 
 export function deleteRegistryMutationOptions() {
   return mutationOptions({
-    mutationFn: ({ id }: { id?: number }) => Registries.DeleteRegistry({
+    mutationFn: ({ id }: DeleteRegistryRequest) => Registries.DeleteRegistry({
       id: requireRegistryId(id),
     }),
     meta: {

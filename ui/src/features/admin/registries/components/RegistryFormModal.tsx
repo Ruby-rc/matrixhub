@@ -97,8 +97,6 @@ export function RegistryFormModal({
       title={mode === 'create'
         ? t('routes.admin.registries.createModal.title')
         : t('routes.admin.registries.editModal.title')}
-      confirmLoading={submitMutation.isPending || isSubmitting}
-      onConfirm={form.handleSubmit}
       footer={(
         <Group justify="flex-end" gap="md">
           <Button
@@ -108,23 +106,29 @@ export function RegistryFormModal({
           >
             {t('common.cancel')}
           </Button>
-          <form.Subscribe selector={state => state.values.url}>
-            {(registryUrl) => {
-              const isRegistryUrlValid = registryUrlSchema.safeParse(registryUrl).success
-
-              return (
-                <Button
-                  variant="outline"
-                  loading={pingMutation.isPending}
-                  disabled={!isRegistryUrlValid || submitMutation.isPending || isSubmitting}
-                  onClick={() => {
-                    void handleTestConnection()
-                  }}
-                >
-                  {t('routes.admin.registries.form.testConnection')}
-                </Button>
-              )
-            }}
+          <form.Subscribe
+            selector={state => [
+              state.values.url.trim().length > 0,
+              state.fieldMeta.url?.isValid ?? false,
+            ]}
+          >
+            {([hasRegistryUrl, isRegistryUrlValid]) => (
+              <Button
+                variant="outline"
+                loading={pingMutation.isPending}
+                disabled={
+                  !hasRegistryUrl
+                  || !isRegistryUrlValid
+                  || submitMutation.isPending
+                  || isSubmitting
+                }
+                onClick={() => {
+                  void handleTestConnection()
+                }}
+              >
+                {t('routes.admin.registries.form.testConnection')}
+              </Button>
+            )}
           </form.Subscribe>
           <Button
             loading={submitMutation.isPending || isSubmitting}
@@ -217,10 +221,8 @@ export function RegistryFormModal({
                 <FieldHintLabel
                   label={t('routes.admin.registries.form.username')}
                   hint={t('routes.admin.registries.form.usernameHint')}
-                  tooltipProps={{ w: 240 }}
                 />
               )}
-              withAsterisk
               value={field.state.value}
               onChange={event => field.handleChange(event.currentTarget.value)}
               onBlur={field.handleBlur}
@@ -247,7 +249,6 @@ export function RegistryFormModal({
                 <FieldHintLabel
                   label={t('routes.admin.registries.form.verifyRemoteCert')}
                   hint={t('routes.admin.registries.form.verifyRemoteCertHint')}
-                  tooltipProps={{ w: 260 }}
                 />
               )}
               checked={field.state.value}
