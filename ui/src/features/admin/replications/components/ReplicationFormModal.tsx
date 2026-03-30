@@ -1,11 +1,15 @@
 import {
+  Box,
   Checkbox,
+  Flex,
   Group,
+  Input,
   NumberInput,
   Radio,
   RadioGroup,
   Select,
   Stack,
+  Text,
   TextInput,
   Textarea,
 } from '@mantine/core'
@@ -16,7 +20,7 @@ import {
 } from '@matrixhub/api-ts/v1alpha1/sync_policy.pb'
 import { useForm, useStore } from '@tanstack/react-form'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { useMemo } from 'react'
+import { useMemo, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { registriesQueryOptions } from '@/features/admin/registries/registries.query'
@@ -49,12 +53,82 @@ import type {
 const BANDWIDTH_MIN = -1
 const BANDWIDTH_MAX = 1048576
 const DESCRIPTION_MAX_LENGTH = 50
+const INLINE_FIELD_LABEL_WIDTH = 80
+
+const inlineTextInputStyles = {
+  input: {
+    border: 0,
+    borderRadius: 0,
+    paddingInline: 'var(--mantine-spacing-md)',
+    backgroundColor: 'transparent',
+  },
+} as const
+
+const inlineSelectStyles = {
+  input: {
+    border: 0,
+    borderRadius: 0,
+    paddingInline: 'var(--mantine-spacing-md)',
+    backgroundColor: 'transparent',
+  },
+  section: {
+    color: 'var(--mantine-color-dimmed)',
+  },
+} as const
 
 export interface ReplicationFormModalProps {
   mode: 'create' | 'edit'
   opened: boolean
   syncPolicy?: SyncPolicyItem
   onClose: () => void
+}
+
+interface InlineFieldShellProps {
+  label: string
+  children: ReactNode
+}
+
+function InlineFieldShell({
+  label,
+  children,
+}: InlineFieldShellProps) {
+  return (
+    <Flex
+      style={{
+        border: '1px solid var(--mantine-color-default-border)',
+        borderRadius: 'var(--mantine-radius-sm)',
+        overflow: 'hidden',
+      }}
+    >
+      <Flex
+        align="center"
+        gap={6}
+        px="md"
+        bg="var(--mantine-color-gray-light)"
+        fs="xs"
+        p="0"
+        style={{
+          textAlign: 'center',
+          minWidth: INLINE_FIELD_LABEL_WIDTH,
+          flexShrink: 0,
+          borderRight: '1px solid var(--mantine-color-default-border)',
+        }}
+      >
+        <Text size="sm" c="dimmed">
+          {label}
+        </Text>
+      </Flex>
+
+      <Box
+        style={{
+          flex: 1,
+          minWidth: 0,
+        }}
+      >
+        {children}
+      </Box>
+    </Flex>
+  )
 }
 
 // The backend accepts `resourceTypes: ResourceType[]`, but the current UI
@@ -330,32 +404,46 @@ export function ReplicationFormModal({
           )}
         </form.Field>
 
-        <form.Field name="resourceName">
-          {field => (
-            <TextInput
-              label={t('routes.admin.replications.form.resourceFilter')}
-              placeholder={t('routes.admin.replications.form.resourceName')}
-              value={field.state.value}
-              onChange={event => field.handleChange(event.currentTarget.value)}
-              onBlur={field.handleBlur}
-            />
-          )}
-        </form.Field>
+        <Input.Wrapper
+          label={t('routes.admin.replications.form.resourceFilter')}
+          labelElement="div"
+        >
+          <Stack gap="xs">
+            <InlineFieldShell label={t('routes.admin.replications.form.resourceName')}>
+              <form.Field name="resourceName">
+                {field => (
+                  <TextInput
+                    aria-label={t('routes.admin.replications.form.resourceName')}
+                    variant="unstyled"
+                    placeholder={t('routes.admin.replications.form.resourceNamePlaceholder')}
+                    value={field.state.value}
+                    onChange={event => field.handleChange(event.currentTarget.value)}
+                    onBlur={field.handleBlur}
+                    styles={inlineTextInputStyles}
+                  />
+                )}
+              </form.Field>
+            </InlineFieldShell>
 
-        <form.Field name="resourceType">
-          {field => (
-            <Select
-              label={t('routes.admin.replications.form.resourceTypes.label')}
-              placeholder={t('routes.admin.replications.form.resourceTypes.label')}
-              data={resourceTypeOptions}
-              value={field.state.value}
-              onChange={value => field.handleChange(value as ReplicationFormValues['resourceType'])}
-              onBlur={field.handleBlur}
-              error={fieldError(field)}
-              allowDeselect={false}
-            />
-          )}
-        </form.Field>
+            <InlineFieldShell label={t('routes.admin.replications.form.resourceTypes.label')}>
+              <form.Field name="resourceType">
+                {field => (
+                  <Select
+                    aria-label={t('routes.admin.replications.form.resourceTypes.label')}
+                    variant="unstyled"
+                    data={resourceTypeOptions}
+                    value={field.state.value}
+                    onChange={value => field.handleChange(value as ReplicationFormValues['resourceType'])}
+                    onBlur={field.handleBlur}
+                    error={fieldError(field)}
+                    allowDeselect={false}
+                    styles={inlineSelectStyles}
+                  />
+                )}
+              </form.Field>
+            </InlineFieldShell>
+          </Stack>
+        </Input.Wrapper>
 
         {isPushMode && (
           <form.Field name="targetRegistryId">
@@ -375,18 +463,27 @@ export function ReplicationFormModal({
           </form.Field>
         )}
 
-        <form.Field name="targetProjectName">
-          {field => (
-            <TextInput
-              label={t('routes.admin.replications.form.target')}
-              placeholder={t('routes.admin.replications.form.targetProjectNamePlaceholder')}
-              value={field.state.value}
-              onChange={event => field.handleChange(event.currentTarget.value)}
-              onBlur={field.handleBlur}
-              error={fieldError(field)}
-            />
-          )}
-        </form.Field>
+        <Input.Wrapper
+          label={t('routes.admin.replications.form.target')}
+          labelElement="div"
+        >
+          <InlineFieldShell label={t('routes.admin.replications.form.targetProjectName')}>
+            <form.Field name="targetProjectName">
+              {field => (
+                <TextInput
+                  aria-label={t('routes.admin.replications.form.targetProjectName')}
+                  variant="unstyled"
+                  placeholder={t('routes.admin.replications.form.targetProjectNamePlaceholder')}
+                  value={field.state.value}
+                  onChange={event => field.handleChange(event.currentTarget.value)}
+                  onBlur={field.handleBlur}
+                  error={fieldError(field)}
+                  styles={inlineTextInputStyles}
+                />
+              )}
+            </form.Field>
+          </InlineFieldShell>
+        </Input.Wrapper>
 
         <form.Field name="triggerType">
           {field => (

@@ -62,7 +62,7 @@
     },
     "targetRegistry": "目标仓库",
     "target": "目标",
-    "targetProjectName": "目标项目名称",
+    "targetProjectName": "目标项目",
     "targetProjectNamePlaceholder": "例如：my-project",
     "triggerType": "触发模式",
     "bandwidth": "带宽限制",

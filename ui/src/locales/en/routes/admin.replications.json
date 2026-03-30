@@ -54,6 +54,7 @@
     "resourceFilter": "Resource Filter",
     "resourceName": "Resource Name",
     "resourceNamePlaceholder": "e.g., model-name or * for all",
+    "resourceFilterHint": "Filters resources by name. Leave it empty or use \"*\" to match all resources; \"qwen/**\" only matches resources under \"qwen\". See the user guide for more patterns.",
     "resourceTypes": {
       "label": "Resource Types",
       "model": "Model",
@@ -62,7 +63,7 @@
     },
     "targetRegistry": "Target Registry",
     "target": "Target",
-    "targetProjectName": "Target Project Name",
+    "targetProjectName": "Target Project",
     "targetProjectNamePlaceholder": "e.g., my-project",
     "triggerType": "Trigger Mode",
     "bandwidth": "Bandwidth Limit",
