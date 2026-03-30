@@ -314,7 +314,7 @@ export function ReplicationFormModal({
     <ModalWrapper
       opened={opened}
       onClose={onClose}
-      size={390}
+      size="sm"
       closeOnClickOutside={false}
       title={mode === 'create'
         ? t('routes.admin.replications.createModal.title')
@@ -388,22 +388,24 @@ export function ReplicationFormModal({
           )}
         </form.Field>
 
-        <form.Field name="sourceRegistryId">
-          {field => (
-            <Select
-              label={t('routes.admin.replications.form.sourceRegistry')}
-              withAsterisk
-              data={registryOptions}
-              value={field.state.value ? String(field.state.value) : null}
-              onChange={value => field.handleChange(value ? Number(value) : 0)}
-              onBlur={field.handleBlur}
-              error={fieldError(field)}
-              searchable
-              allowDeselect={false}
-              disabled={registriesQuery.isLoading}
-            />
-          )}
-        </form.Field>
+        {!isPushMode && (
+          <form.Field name="sourceRegistryId">
+            {field => (
+              <Select
+                label={t('routes.admin.replications.form.sourceRegistry')}
+                withAsterisk
+                data={registryOptions}
+                value={field.state.value ? String(field.state.value) : null}
+                onChange={value => field.handleChange(value ? Number(value) : 0)}
+                onBlur={field.handleBlur}
+                error={fieldError(field)}
+                searchable
+                allowDeselect={false}
+                disabled={registriesQuery.isLoading}
+              />
+            )}
+          </form.Field>
+        )}
 
         <Input.Wrapper
           label={t('routes.admin.replications.form.resourceFilter')}

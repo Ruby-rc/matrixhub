@@ -41,7 +41,7 @@ function DeleteReplicationModal({
       opened={opened}
       onClose={onClose}
       type="danger"
-      size={390}
+      size="sm"
       closeOnClickOutside={false}
       title={t('routes.admin.replications.deleteModal.title')}
       confirmLoading={loading}
