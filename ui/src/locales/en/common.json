@@ -11,6 +11,20 @@
   "colon": ": ",
   "backgroundRefreshFailed": "Background refresh failed",
   "operationFailed": "Operation failed",
+  "fileTree": {
+    "searchPlaceholder": "Search file name",
+    "commitsCount": "{{count}} commits",
+    "name": "Name",
+    "size": "Size",
+    "lastCommit": "Last commit",
+    "lastUpdate": "Last update",
+    "download": "Download",
+    "updatedTime": "Updated: {{time}}",
+    "preview": "Preview",
+    "code": "Code",
+    "pathNotFound": "\"{{path}}\" does not exist on branch \"{{branch}}\"",
+    "backToRoot": "Go to root directory"
+  },
   "errorPage": {
     "backToHome": "Take me back to home page",
     "404": {

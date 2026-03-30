@@ -1,5 +1,7 @@
 import dayjs from 'dayjs'
 
+import '@/i18n/dayjs'
+
 type TimestampValue = number | string
 
 export interface ProtobufTimestampLike {
@@ -24,11 +26,20 @@ function toMilliseconds(value: TimestampValue) {
     return undefined
   }
 
-  if (String(Math.trunc(Math.abs(dateNum))).length <= 10) {
+  const digits = String(Math.trunc(Math.abs(dateNum))).length
+
+  // seconds (<=10 digits)
+  if (digits <= 10) {
     return dateNum * 1000
   }
 
-  return dateNum
+  // milliseconds (11-13 digits)
+  if (digits <= 13) {
+    return dateNum
+  }
+
+  // microseconds (14-16 digits)
+  return dateNum / 1000
 }
 
 function normalizeDateValue(value: DateValue) {
@@ -87,4 +98,28 @@ export function formatDateTime(
   }
 
   return formattedValue.format(format)
+}
+
+export function formatRelativeTime(value: DateValue) {
+  if (isNil(value) || value === '') {
+    return '-'
+  }
+
+  if (Number(value) === 0) {
+    return '-'
+  }
+
+  const normalizedValue = normalizeDateValue(value)
+
+  if (isNil(normalizedValue) || normalizedValue === 0 || normalizedValue === '') {
+    return '-'
+  }
+
+  const d = dayjs(normalizedValue)
+
+  if (!d.isValid()) {
+    return '-'
+  }
+
+  return d.fromNow()
 }
