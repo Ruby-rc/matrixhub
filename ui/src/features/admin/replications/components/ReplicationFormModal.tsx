@@ -25,6 +25,7 @@ import { useMemo, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { registriesQueryOptions } from '@/features/admin/registries/registries.query'
+import { FieldHintLabel } from '@/shared/components/FieldHintLabel'
 import { ModalWrapper } from '@/shared/components/ModalWrapper'
 import { fieldError } from '@/shared/utils/form'
 
@@ -375,12 +376,24 @@ export function ReplicationFormModal({
               <Group mt="xs">
                 <Radio
                   value={String(SyncPolicyType.SYNC_POLICY_TYPE_PULL_BASE)}
-                  label={t('routes.admin.replications.form.pull')}
+                  label={(
+                    <FieldHintLabel
+                      label={t('routes.admin.replications.form.pull')}
+                      hint={t('routes.admin.replications.form.pullHint')}
+                      tooltipProps={{ w: 280 }}
+                    />
+                  )}
                   disabled={mode === 'edit'}
                 />
                 <Radio
                   value={String(SyncPolicyType.SYNC_POLICY_TYPE_PUSH_BASE)}
-                  label={t('routes.admin.replications.form.push')}
+                  label={(
+                    <FieldHintLabel
+                      label={t('routes.admin.replications.form.push')}
+                      hint={t('routes.admin.replications.form.pushHint')}
+                      tooltipProps={{ w: 280 }}
+                    />
+                  )}
                   disabled
                 />
               </Group>
@@ -392,7 +405,12 @@ export function ReplicationFormModal({
           <form.Field name="sourceRegistryId">
             {field => (
               <Select
-                label={t('routes.admin.replications.form.sourceRegistry')}
+                label={(
+                  <FieldHintLabel
+                    label={t('routes.admin.replications.form.sourceRegistry')}
+                    hint={t('routes.admin.replications.form.sourceRegistryHint')}
+                  />
+                )}
                 withAsterisk
                 data={registryOptions}
                 value={field.state.value ? String(field.state.value) : null}
@@ -408,7 +426,13 @@ export function ReplicationFormModal({
         )}
 
         <Input.Wrapper
-          label={t('routes.admin.replications.form.resourceFilter')}
+          label={(
+            <FieldHintLabel
+              label={t('routes.admin.replications.form.resourceFilter')}
+              hint={t('routes.admin.replications.form.resourceFilterHint')}
+              tooltipProps={{ w: 320 }}
+            />
+          )}
           labelElement="div"
         >
           <Stack gap="xs">
@@ -468,7 +492,13 @@ export function ReplicationFormModal({
         )}
 
         <Input.Wrapper
-          label={t('routes.admin.replications.form.target')}
+          label={(
+            <FieldHintLabel
+              label={t('routes.admin.replications.form.target')}
+              hint={t('routes.admin.replications.form.targetHint')}
+              tooltipProps={{ w: 280 }}
+            />
+          )}
           labelElement="div"
         >
           <form.Field name="targetProjectName">
@@ -511,7 +541,13 @@ export function ReplicationFormModal({
             {field => (
               <NumberInput
                 style={{ flex: 1 }}
-                label={t('routes.admin.replications.form.bandwidth')}
+                label={(
+                  <FieldHintLabel
+                    label={t('routes.admin.replications.form.bandwidth')}
+                    hint={t('routes.admin.replications.form.bandwidthHint')}
+                    tooltipProps={{ w: 320 }}
+                  />
+                )}
                 min={BANDWIDTH_MIN}
                 max={BANDWIDTH_MAX}
                 value={field.state.value ? Number(field.state.value) : BANDWIDTH_MIN}
@@ -544,7 +580,13 @@ export function ReplicationFormModal({
         <form.Field name="isOverwrite">
           {field => (
             <Checkbox
-              label={t('routes.admin.replications.form.isOverwrite')}
+              label={(
+                <FieldHintLabel
+                  label={t('routes.admin.replications.form.isOverwrite')}
+                  hint={t('routes.admin.replications.form.isOverwriteHint')}
+                  tooltipProps={{ w: 280 }}
+                />
+              )}
               checked={field.state.value}
               onChange={event => field.handleChange(event.currentTarget.checked)}
               onBlur={field.handleBlur}
