@@ -101,7 +101,7 @@ function InlineFieldShell({
       <Flex
         style={{
           border: '1px solid var(--mantine-color-default-border)',
-          borderRadius: 'var(--mantine-radius-sm)',
+          borderRadius: 'var(--app-size-radius-mmd)',
           overflow: 'hidden',
         }}
       >
@@ -587,6 +587,15 @@ export function ReplicationFormModal({
                   tooltipProps={{ w: 280 }}
                 />
               )}
+              styles={{
+                body: {
+                  alignItems: 'center',
+                },
+                labelWrapper: {
+                  display: 'flex',
+                  alignItems: 'center',
+                },
+              }}
               checked={field.state.value}
               onChange={event => field.handleChange(event.currentTarget.checked)}
               onBlur={field.handleBlur}
