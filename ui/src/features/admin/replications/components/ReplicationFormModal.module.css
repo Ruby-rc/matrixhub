@@ -18,6 +18,9 @@
   background-color: var(--mantine-color-gray-light);
   font-size: var(--mantine-font-size-sm);
   text-align: center;
+  left: 0;
+  top: 0;
+  bottom: 0;
 }
 
 .inlineFieldSectionLabel {
