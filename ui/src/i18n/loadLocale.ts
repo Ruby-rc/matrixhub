@@ -57,6 +57,8 @@ export function loadLocale(lang: string) {
       .split(`/${lang}/`)[1]
       .replace(/\.json$/, '')
       .split('/')
+      .flatMap(segment => segment.split('.'))
+      .filter(Boolean)
 
     const moduleContent = modules[path].default
 
