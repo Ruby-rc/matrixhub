@@ -36,6 +36,7 @@ import { Route as authappProjectsProjectIdSettingsIndexRouteImport } from './rou
 import { Route as authappProjectsProjectIdModelsIndexRouteImport } from './routes/(auth)/(app)/projects/$projectId/models/index'
 import { Route as authappProjectsProjectIdMembersIndexRouteImport } from './routes/(auth)/(app)/projects/$projectId/members/index'
 import { Route as authappProjectsProjectIdDatasetsIndexRouteImport } from './routes/(auth)/(app)/projects/$projectId/datasets/index'
+import { Route as authAdminReplicationsReplicationIdExecutionsExecutionIdRouteImport } from './routes/(auth)/admin/replications_.$replicationId.executions_.$executionId'
 import { Route as authappProjectsProjectIdModelsModelIdRouteRouteImport } from './routes/(auth)/(app)/projects_.$projectId/models.$modelId/route'
 import { Route as authappProjectsProjectIdDatasetsDatasetIdRouteRouteImport } from './routes/(auth)/(app)/projects_.$projectId/datasets.$datasetId/route'
 import { Route as authappProjectsProjectIdModelsModelIdIndexRouteImport } from './routes/(auth)/(app)/projects_.$projectId/models.$modelId/index'
@@ -191,6 +192,12 @@ const authappProjectsProjectIdDatasetsIndexRoute =
     path: '/datasets/',
     getParentRoute: () => authappProjectsProjectIdRouteRoute,
   } as any)
+const authAdminReplicationsReplicationIdExecutionsExecutionIdRoute =
+  authAdminReplicationsReplicationIdExecutionsExecutionIdRouteImport.update({
+    id: '/replications_/$replicationId/executions_/$executionId',
+    path: '/replications/$replicationId/executions/$executionId',
+    getParentRoute: () => authAdminRouteRoute,
+  } as any)
 const authappProjectsProjectIdModelsModelIdRouteRoute =
   authappProjectsProjectIdModelsModelIdRouteRouteImport.update({
     id: '/projects_/$projectId/models/$modelId',
@@ -296,6 +303,7 @@ export interface FileRoutesByFullPath {
   '/projects/$projectId/': typeof authappProjectsProjectIdIndexRoute
   '/projects/$projectId/datasets/$datasetId': typeof authappProjectsProjectIdDatasetsDatasetIdRouteRouteWithChildren
   '/projects/$projectId/models/$modelId': typeof authappProjectsProjectIdModelsModelIdRouteRouteWithChildren
+  '/admin/replications/$replicationId/executions/$executionId': typeof authAdminReplicationsReplicationIdExecutionsExecutionIdRoute
   '/projects/$projectId/datasets/': typeof authappProjectsProjectIdDatasetsIndexRoute
   '/projects/$projectId/members/': typeof authappProjectsProjectIdMembersIndexRoute
   '/projects/$projectId/models/': typeof authappProjectsProjectIdModelsIndexRoute
@@ -332,6 +340,7 @@ export interface FileRoutesByTo {
   '/admin/replications/$replicationId/executions': typeof authAdminReplicationsReplicationIdExecutionsRoute
   '/projects/$projectId': typeof authappProjectsProjectIdIndexRoute
   '/projects/$projectId/datasets/$datasetId': typeof authappProjectsProjectIdDatasetsDatasetIdRouteRouteWithChildren
+  '/admin/replications/$replicationId/executions/$executionId': typeof authAdminReplicationsReplicationIdExecutionsExecutionIdRoute
   '/projects/$projectId/datasets': typeof authappProjectsProjectIdDatasetsIndexRoute
   '/projects/$projectId/members': typeof authappProjectsProjectIdMembersIndexRoute
   '/projects/$projectId/models': typeof authappProjectsProjectIdModelsIndexRoute
@@ -375,6 +384,7 @@ export interface FileRoutesById {
   '/(auth)/(app)/projects/$projectId/': typeof authappProjectsProjectIdIndexRoute
   '/(auth)/(app)/projects_/$projectId/datasets/$datasetId': typeof authappProjectsProjectIdDatasetsDatasetIdRouteRouteWithChildren
   '/(auth)/(app)/projects_/$projectId/models/$modelId': typeof authappProjectsProjectIdModelsModelIdRouteRouteWithChildren
+  '/(auth)/admin/replications_/$replicationId/executions_/$executionId': typeof authAdminReplicationsReplicationIdExecutionsExecutionIdRoute
   '/(auth)/(app)/projects/$projectId/datasets/': typeof authappProjectsProjectIdDatasetsIndexRoute
   '/(auth)/(app)/projects/$projectId/members/': typeof authappProjectsProjectIdMembersIndexRoute
   '/(auth)/(app)/projects/$projectId/models/': typeof authappProjectsProjectIdModelsIndexRoute
@@ -417,6 +427,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/'
     | '/projects/$projectId/datasets/$datasetId'
     | '/projects/$projectId/models/$modelId'
+    | '/admin/replications/$replicationId/executions/$executionId'
     | '/projects/$projectId/datasets/'
     | '/projects/$projectId/members/'
     | '/projects/$projectId/models/'
@@ -453,6 +464,7 @@ export interface FileRouteTypes {
     | '/admin/replications/$replicationId/executions'
     | '/projects/$projectId'
     | '/projects/$projectId/datasets/$datasetId'
+    | '/admin/replications/$replicationId/executions/$executionId'
     | '/projects/$projectId/datasets'
     | '/projects/$projectId/members'
     | '/projects/$projectId/models'
@@ -495,6 +507,7 @@ export interface FileRouteTypes {
     | '/(auth)/(app)/projects/$projectId/'
     | '/(auth)/(app)/projects_/$projectId/datasets/$datasetId'
     | '/(auth)/(app)/projects_/$projectId/models/$modelId'
+    | '/(auth)/admin/replications_/$replicationId/executions_/$executionId'
     | '/(auth)/(app)/projects/$projectId/datasets/'
     | '/(auth)/(app)/projects/$projectId/members/'
     | '/(auth)/(app)/projects/$projectId/models/'
@@ -709,6 +722,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/projects/$projectId/datasets/'
       preLoaderRoute: typeof authappProjectsProjectIdDatasetsIndexRouteImport
       parentRoute: typeof authappProjectsProjectIdRouteRoute
+    }
+    '/(auth)/admin/replications_/$replicationId/executions_/$executionId': {
+      id: '/(auth)/admin/replications_/$replicationId/executions_/$executionId'
+      path: '/replications/$replicationId/executions/$executionId'
+      fullPath: '/admin/replications/$replicationId/executions/$executionId'
+      preLoaderRoute: typeof authAdminReplicationsReplicationIdExecutionsExecutionIdRouteImport
+      parentRoute: typeof authAdminRouteRoute
     }
     '/(auth)/(app)/projects_/$projectId/models/$modelId': {
       id: '/(auth)/(app)/projects_/$projectId/models/$modelId'
@@ -941,6 +961,7 @@ interface authAdminRouteRouteChildren {
   authAdminUsersRoute: typeof authAdminUsersRoute
   authAdminIndexRoute: typeof authAdminIndexRoute
   authAdminReplicationsReplicationIdExecutionsRoute: typeof authAdminReplicationsReplicationIdExecutionsRoute
+  authAdminReplicationsReplicationIdExecutionsExecutionIdRoute: typeof authAdminReplicationsReplicationIdExecutionsExecutionIdRoute
 }
 
 const authAdminRouteRouteChildren: authAdminRouteRouteChildren = {
@@ -950,6 +971,8 @@ const authAdminRouteRouteChildren: authAdminRouteRouteChildren = {
   authAdminIndexRoute: authAdminIndexRoute,
   authAdminReplicationsReplicationIdExecutionsRoute:
     authAdminReplicationsReplicationIdExecutionsRoute,
+  authAdminReplicationsReplicationIdExecutionsExecutionIdRoute:
+    authAdminReplicationsReplicationIdExecutionsExecutionIdRoute,
 }
 
 const authAdminRouteRouteWithChildren = authAdminRouteRoute._addFileChildren(
