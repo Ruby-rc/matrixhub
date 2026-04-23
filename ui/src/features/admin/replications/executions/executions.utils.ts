@@ -28,6 +28,7 @@ export function formatReplicationExecutionDuration(task: SyncTask) {
   const completedAt = task.completedTimestamp == null
     ? undefined
     : toMilliseconds(task.completedTimestamp)
+
   const endedAt = completedAt ?? (
     task.status === SyncTaskStatus.SYNC_TASK_STATUS_RUNNING
       ? Date.now()
