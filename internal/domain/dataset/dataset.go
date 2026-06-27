@@ -38,6 +38,8 @@ type Dataset struct {
 }
 
 // IDatasetRepo defines the repository interface for dataset database operations.
+//
+//go:generate go tool mockgen -source=dataset.go -destination=mocks/dataset_repo_mock.go -package=mocks
 type IDatasetRepo interface {
 	// Create creates a new dataset in the database.
 	Create(ctx context.Context, d *Dataset) (*Dataset, error)

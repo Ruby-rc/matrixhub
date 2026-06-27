@@ -20,8 +20,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/matrixhub-ai/hfd/pkg/repository"
-
 	"github.com/matrixhub-ai/matrixhub/internal/domain/git"
 	"github.com/matrixhub-ai/matrixhub/internal/domain/project"
 	"github.com/matrixhub-ai/matrixhub/internal/domain/registry"
@@ -29,6 +27,8 @@ import (
 )
 
 // IModelService defines the service interface for model operations.
+//
+//go:generate go tool mockgen -source=model_service.go -destination=mocks/model_service_mock.go -package=mocks
 type IModelService interface {
 	// Model CRUD operations
 	CreateModel(ctx context.Context, project, name string) (*Model, error)
@@ -58,6 +58,7 @@ type IModelService interface {
 	// Metadata sync
 	SyncMetadata(ctx context.Context, project, name string) error
 
+	// CheckOrSyncFromRemote synchronizes an existing proxy model from its remote registry.
 	CheckOrSyncFromRemote(ctx context.Context, project, name string) error
 }
 
@@ -83,34 +84,21 @@ func NewModelService(modelRepo IModelRepo, labelRepo ILabelRepo, gitRepo git.IGi
 
 // CreateModel creates a new model in the system.
 func (s *ModelService) CreateModel(ctx context.Context, project, name string) (*Model, error) {
-	if project == "" {
-		return nil, errors.New("invalid project")
-	}
-	if name == "" {
-		return nil, errors.New("invalid name")
-	}
-
-	// Check if model already exists
-	_, err := s.modelRepo.GetByProjectAndName(ctx, project, name)
-	if err == nil {
-		return nil, errors.New("model already exists")
-	}
-	// If error message contains "not found", continue to create
-	// Otherwise, return the error
-	if !strings.Contains(err.Error(), "not found") {
+	if err := validateModelPath(project, name); err != nil {
 		return nil, err
 	}
 
-	model := &Model{
-		Name:        name,
-		ProjectName: project,
+	if _, exists, err := s.findModel(ctx, project, name); err != nil {
+		return nil, err
+	} else if exists {
+		return nil, errors.New("model already exists")
 	}
 
 	if err := s.gitRepo.CreateRepository(ctx, "models", project, name); err != nil {
 		return nil, err
 	}
 
-	return s.modelRepo.Create(ctx, model)
+	return s.createModelRecord(ctx, project, name)
 }
 
 // GetModel retrieves a model by project and name.
@@ -374,12 +362,15 @@ func (s *ModelService) CheckOrSyncFromRemote(ctx context.Context, project, name 
 		return err
 	}
 	if !prj.HasProxy() {
-		_, err := s.modelRepo.GetByProjectAndName(ctx, project, name)
-		if err != nil {
-			return repository.ErrRepositoryNotExists
-		} else {
-			return nil
-		}
+		return nil
+	}
+
+	mod, err := s.modelRepo.GetByProjectAndName(ctx, project, name)
+	if err != nil {
+		return err
+	}
+	if !mod.ShouldSync() {
+		return nil
 	}
 
 	reg, err := s.registryRepo.GetRegistry(ctx, *prj.RegistryID)
@@ -394,37 +385,63 @@ func (s *ModelService) CheckOrSyncFromRemote(ctx context.Context, project, name 
 		ResourceName:       name,
 		ResourceType:       "model",
 	}
-	mod, _ := s.modelRepo.GetByProjectAndName(ctx, project, name)
-	if mod == nil {
-		mod = &Model{
-			Name:        name,
-			ProjectID:   prj.ID,
-			ProjectName: project,
-		}
-		if _, err = s.modelRepo.Create(ctx, mod); err != nil {
-			return err
-		}
-	} else if !mod.ShouldSync() {
-		return nil
-	}
-	if err = s.gitRepo.PullFromRemote(context.Background(), gr); err != nil {
+	if err = s.gitRepo.PullFromRemote(ctx, gr); err != nil {
 		return err
 	}
-	if err = s.SyncMetadata(context.Background(), mod.ProjectName, mod.Name); err != nil {
+	if err = s.SyncMetadata(ctx, project, name); err != nil {
 		return err
 	}
-	if ctx.Err() != nil {
-		return ctx.Err()
-	}
-
 	return nil
 }
 
 func (s *ModelService) EnsureModel(ctx context.Context, project, name string) (*Model, error) {
-	model, err := s.modelRepo.GetByProjectAndName(ctx, project, name)
-	if err == nil {
-		return model, nil
+	if err := validateModelPath(project, name); err != nil {
+		return nil, err
 	}
 
-	return s.CreateModel(ctx, project, name)
+	if mod, exists, err := s.findModel(ctx, project, name); err != nil {
+		return nil, err
+	} else if exists {
+		return mod, nil
+	}
+
+	exists, err := s.gitRepo.RepositoryExists(ctx, "models", project, name)
+	if err != nil {
+		return nil, err
+	}
+	if !exists {
+		if err := s.gitRepo.CreateRepository(ctx, "models", project, name); err != nil {
+			return nil, err
+		}
+	}
+
+	return s.createModelRecord(ctx, project, name)
+}
+
+func validateModelPath(project, name string) error {
+	if project == "" {
+		return errors.New("invalid project")
+	}
+	if name == "" {
+		return errors.New("invalid name")
+	}
+	return nil
+}
+
+func (s *ModelService) findModel(ctx context.Context, project, name string) (*Model, bool, error) {
+	mod, err := s.modelRepo.GetByProjectAndName(ctx, project, name)
+	if err == nil {
+		return mod, true, nil
+	}
+	if strings.Contains(err.Error(), "not found") {
+		return nil, false, nil
+	}
+	return nil, false, err
+}
+
+func (s *ModelService) createModelRecord(ctx context.Context, project, name string) (*Model, error) {
+	return s.modelRepo.Create(ctx, &Model{
+		Name:        name,
+		ProjectName: project,
+	})
 }

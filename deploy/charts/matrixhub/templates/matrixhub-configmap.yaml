@@ -22,6 +22,7 @@ data:
     migrationPath: /etc/matrixhub/migrations
     apiServer:
       port: {{ .Values.apiserver.port }}
+      sshPort: {{ .Values.apiserver.sshPort }}
       externalURL: {{ .Values.apiserver.externalURL | default "" | quote }}
     {{- if .Values.jobServer }}
     jobServer:
@@ -47,4 +48,3 @@ data:
       persistentSessionLifetime: {{ .Values.apiserver.session.persistentSessionLifetime }}
       persistentSessionIdleTimeout: {{ .Values.apiserver.session.persistentSessionIdleTimeout }}
       nonPersistentIdleTimeout: {{ .Values.apiserver.session.nonPersistentIdleTimeout }}
-

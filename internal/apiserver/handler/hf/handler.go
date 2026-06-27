@@ -233,8 +233,12 @@ func getRepoInformation(r *http.Request) repoInformation {
 }
 
 func (h *Handler) openRepo(ctx context.Context, ri repoInformation, repoPath, service string) (*repository.Repository, error) {
-	if h.mirror == nil || service != repository.GitUploadPack {
+	if ri.RepoType != "models" || h.mirror == nil || service != repository.GitUploadPack {
 		return repository.Open(repoPath)
+	}
+	if _, err := h.modelService.EnsureModel(ctx, ri.Namespace, ri.Name); err != nil {
+		log.Errorf("failed to ensure model for %s/%s: %v", ri.Namespace, ri.Name, err)
+		return nil, err
 	}
 	if err := h.modelService.CheckOrSyncFromRemote(ctx, ri.Namespace, ri.Name); err != nil {
 		log.Errorf("failed to sync from remote for %s/%s: %v", ri.Namespace, ri.Name, err)

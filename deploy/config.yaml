@@ -14,6 +14,7 @@ database:
   migrate: true
 apiServer:
   port: 3001
+  sshPort: 22
   externalURL: ""
 jobServer:
   enabled: true
