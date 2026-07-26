@@ -2,122 +2,122 @@
 sidebar_position: 1
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # Installation
 
-This guide walks you through deploying MatrixHub in production. We support two official, production-ready installation methods: **Docker Compose** (for single-node hosts) and **Helm Charts** (for Kubernetes clusters).
+We support two official installation methods: **Docker Compose** (for single-node hosts) and **Helm Charts** (for Kubernetes clusters).
 
 ---
 
-## 📋 System Prerequisites
-
-Before starting, ensure your target host/environment satisfies these requirements:
-*   **Docker Compose Deployment**: Docker 20.10+ and Docker Compose v2.0+ installed.
-*   **Helm (Kubernetes) Deployment**: Kubernetes cluster v1.19+ and Helm CLI v3.0+ configured.
-*   **Database**: An accessible MySQL database instance (v5.7 or v8.0). *Note: Docker Compose and Helm default installations automatically spin up a built-in MySQL database.*
-
----
-
-## 🐋 Method A: Docker Compose Deployment
+## 🐋 Docker Compose Deployment
 
 Docker Compose is the easiest way to deploy MatrixHub on a standalone virtual machine or server.
 
-### 1. Fetch Configuration Files
-Download the official deployment compose configurations:
-*   [`docker-compose.yaml`](https://matrixhub.ai/deploy/docker/docker-compose.yaml) (Defines the API server and MySQL container configuration)
-*   [`config.yaml`](https://matrixhub.ai/deploy/docker/config.yaml) (Configures database DSN, log levels, and local storage bindings)
+Download the Docker Compose files for a released version and start MatrixHub:
 
-### 2. Start the Registry Service
-Ensure both files are in the same directory and execute:
+<Tabs groupId="operating-system">
+<TabItem value="linux-macos" label="Linux / macOS" default>
+
 ```bash
-# Start all containers in background daemon mode
-docker compose -f docker-compose.yaml up -d
+export MATRIXHUB_VERSION=v0.1.1
+
+mkdir -p matrixhub && cd matrixhub
+
+curl -fL \
+  "https://raw.githubusercontent.com/matrixhub-ai/matrixhub/$MATRIXHUB_VERSION/deploy/docker-compose.yml" \
+  -o docker-compose.yml
+curl -fL \
+  "https://raw.githubusercontent.com/matrixhub-ai/matrixhub/$MATRIXHUB_VERSION/deploy/config.yaml" \
+  -o config.yaml
+
+MATRIXHUB_IMAGE_TAG="$MATRIXHUB_VERSION" docker compose up -d
 ```
 
-### 3. Verification
-Check the running state:
-```bash
-docker compose ps
-```
-The API server will listen on local host port `3001` (`http://localhost:3001`).
+</TabItem>
+<TabItem value="windows" label="Windows (PowerShell)">
 
+```powershell
+$env:MATRIXHUB_VERSION = "v0.1.1"
+
+New-Item -ItemType Directory -Force -Path "matrixhub" | Out-Null
+Set-Location "matrixhub"
+
+Invoke-WebRequest `
+  -Uri "https://raw.githubusercontent.com/matrixhub-ai/matrixhub/$env:MATRIXHUB_VERSION/deploy/docker-compose.yml" `
+  -OutFile "docker-compose.yml"
+Invoke-WebRequest `
+  -Uri "https://raw.githubusercontent.com/matrixhub-ai/matrixhub/$env:MATRIXHUB_VERSION/deploy/config.yaml" `
+  -OutFile "config.yaml"
+
+$env:MATRIXHUB_IMAGE_TAG = $env:MATRIXHUB_VERSION
+docker compose up -d
+```
+
+</TabItem>
+</Tabs>
+
+For a newer stable release, replace `v0.1.1` with the version you want to run.
+If port `3001` is already in use, set `MATRIXHUB_HTTP_PORT` before starting the stack, for example `export MATRIXHUB_HTTP_PORT=3002` on Linux/macOS or `$env:MATRIXHUB_HTTP_PORT = "3002"` in PowerShell.
+
+Open the MatrixHub web console:
+
+```text
+http://127.0.0.1:3001
+```
 ---
 
-## ☸️ Method B: Helm (Kubernetes) Deployment
+## ☸️ Helm (Kubernetes) Deployment
 
-For enterprise-grade high availability, dynamic scaling, and direct cluster caching, install MatrixHub on Kubernetes using Helm.
+### Prerequisites
 
-Set the deployment environment variables first:
+Currently, the Helm chart supports PVC-backed storage for MatrixHub data. S3-compatible object storage is planned for a future release.
+
+Make sure your cluster has a default StorageClass (`kubectl get storageclass`), or explicit storage settings for the PVCs this chart creates. For development clusters without a StorageClass, see [development-only local storage setup](https://github.com/matrixhub-ai/matrixhub/blob/main/deploy/charts/matrixhub/README.md#development-only-local-storage-setup).
+
+### Installing the Chart
+
+MatrixHub publishes its Helm chart to GitHub Container Registry (`ghcr.io`) as an OCI artifact.
+
+For a newer stable release, replace `0.1.1` with the chart version you want to run:
+
 ```bash
-# Define your Helm chart target versions and target namespace
-export CHART_VERSION=0.1.0  
+export CHART_VERSION=0.1.1
 export NAMESPACE=matrixhub
 ```
 
-### Option 1: Install from OCI Registry (Recommended)
-Our Helm charts are securely published to GitHub Container Registry (`ghcr.io`) as OCI artifacts:
+Install the chart and expose the service via `NodePort`:
+
 ```bash
 helm install matrixhub oci://ghcr.io/matrixhub-ai/matrixhub \
-  --version ${CHART_VERSION} \
-  --namespace ${NAMESPACE} --create-namespace
+  --version "$CHART_VERSION" \
+  --namespace "$NAMESPACE" --create-namespace \
+  --set apiserver.service.type=NodePort
 ```
 
-### Option 2: Install from Local Chart Source
-If you have cloned the source repository:
+The default installation uses the cluster's default StorageClass. The MatrixHub data PVC defaults to `50Gi`, and the built-in MySQL PVC defaults to `8Gi`. To change PVC sizes, add `--set apiserver.storage.pvc.size=100Gi` or `--set mysql.persistence.size=20Gi` to the command.
+
+For other storage classes, existing PVCs, and other Helm settings, see the [Helm chart README](https://github.com/matrixhub-ai/matrixhub/blob/main/deploy/charts/matrixhub/README.md).
+
+### Access the UI
+
+With the `NodePort` installation above, open:
+
+```text
+http://<node-ip>:30001
+```
+
+Find a node IP with:
+
 ```bash
-helm install matrixhub ./deploy/charts/matrixhub \
-  --namespace ${NAMESPACE} --create-namespace
+kubectl get nodes -o wide
 ```
 
----
+### Uninstall
 
-## 🌐 Exposing the Service
-
-### 1. ClusterIP (Default)
-By default, the service is only exposed within the internal Kubernetes network on port `9527`. To access it externally for diagnostics, establish a port-forward:
 ```bash
-export POD_NAME=$(kubectl get pods --namespace matrixhub -l app=matrixhub -o jsonpath="{.items[0].metadata.name}")
-kubectl port-forward $POD_NAME 9527:9527 --namespace matrixhub
+helm uninstall matrixhub --namespace "$NAMESPACE"
 ```
 
-### 2. NodePort
-To expose the registry permanently across all Kubernetes worker node IPs:
-```bash
-helm install matrixhub oci://ghcr.io/matrixhub-ai/matrixhub \
-  --version ${CHART_VERSION} \
-  --namespace ${NAMESPACE} --create-namespace \
-  --set apiserver.service.type=NodePort \
-  --set apiserver.service.nodePort=30001
-```
-
----
-
-## 📦 Persistent Storage Configuration
-
-MatrixHub uses standard **PersistentVolumeClaims (PVC)** to store cache data, fine-tuned weights, and MySQL database state.
-
-By default, the Helm chart requests the following PVC resources:
-
-| PVC Name | Mount Container Path | Default Size | Purpose |
-| :--- | :--- | :--- | :--- |
-| `<release>-apiserver-data` | `/data/matrixhub` | `50Gi` | Model files, artifacts, proxy cache |
-| `<release>-mysql-pv-claim` | `/var/lib/mysql` | `8Gi` | Database states (when `mysql.builtIn=true`) |
-
-### Customize Storage Class and Capacities
-To customize PVC claims according to your cloud provider's storage classes, pass overrides to your helm install:
-```bash
-helm install matrixhub oci://ghcr.io/matrixhub-ai/matrixhub \
-  --version ${CHART_VERSION} \
-  --namespace ${NAMESPACE} --create-namespace \
-  --set apiserver.storage.pvc.storageClassName=gp3 \
-  --set apiserver.storage.pvc.size=500Gi \
-  --set mysql.persistence.storageClass=gp3 \
-  --set mysql.persistence.size=50Gi
-```
-
-### Use an Existing Pre-Provisioned PVC
-```bash
-helm install matrixhub oci://ghcr.io/matrixhub-ai/matrixhub \
-  --version ${CHART_VERSION} \
-  --namespace ${NAMESPACE} --create-namespace \
-  --set apiserver.storage.pvc.existingClaim=my-pre-provisioned-pvc
-```
+This removes resources including the default PVCs created by the chart. To preserve data, use an existing PVC for MatrixHub data and an external database.
