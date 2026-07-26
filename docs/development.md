@@ -8,7 +8,7 @@ For backend package boundaries and dependency rules, see
 
 - Go 1.23+
 - Node.js 18+ for the app UI; Node.js 20+ for the documentation website
-- pnpm 8+
+- pnpm 10.x (the app UI pins `pnpm >=10 <11` via `ui/package.json` engines)
 - Docker
 
 ## Local Development
@@ -258,7 +258,7 @@ suite, others run `smoke` (see `.github/workflows/auto-pr-ci.yaml`).
 The E2E runner invokes the `ginkgo` CLI. If it is not installed:
 
 ```bash
-go install github.com/onsi/ginkgo/v2/ginkgo@v2.22.1
+go install github.com/onsi/ginkgo/v2/ginkgo@v2.32.0   # match onsi/ginkgo/v2 in go.mod
 ```
 
 For a KIND-based E2E environment:
