@@ -283,6 +283,94 @@ path therefore reaches the service via the non-loopback hostname
 `matrixhub.local` (mapped to the NodePort host); a loopback `MATRIXHUB_BASE_URL`
 records nothing and the runner warns when that happens.
 
+### Writing a new E2E test
+
+Everything above is about *running* E2E tests. To *add* one, follow the
+conventions the label selection and coverage report depend on. Mirror an
+existing module (e.g. [`test/e2e_apiserver/login`](../test/e2e_apiserver/login))
+rather than inventing a new layout.
+
+#### Basic steps
+
+1. **One package per module.** Create `test/e2e_apiserver/<module>/`, package
+   `<module>_test`. Group all cases for an API area in that one package.
+
+2. **Add a suite file** `<module>_suite_test.go` with the standard ginkgo
+   bootstrap — identical across every module, only the names change:
+
+   ```go
+   package project_test
+
+   import (
+       "testing"
+
+       testenv "github.com/matrixhub-ai/matrixhub/test/e2e_apiserver/init"
+
+       . "github.com/onsi/ginkgo/v2"
+       . "github.com/onsi/gomega"
+   )
+
+   func TestProject(t *testing.T) {
+       RegisterFailHandler(Fail)
+       RunSpecs(t, "Project Suite")
+   }
+
+   var _ = BeforeSuite(func() { defer GinkgoRecover(); testenv.InitTestEnvironment() })
+   var _ = AfterSuite(func()  { testenv.CleanupTestEnvironment() })
+   ```
+
+3. **Call the API through the generated client, never raw `net/http`.** Import
+   the module's client under `test/client/v1alpha1/<module>`, take the base URL
+   from `tools.GetBaseURL()`
+   (`github.com/matrixhub-ai/matrixhub/test/tools`), and build the client like:
+
+   ```go
+   cfg := &v1alpha1login.Configuration{
+       BasePath:      tools.GetBaseURL(),
+       DefaultHeader: map[string]string{"Content-Type": "application/json"},
+       HTTPClient: &http.Client{Transport: &http.Transport{
+           TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, // #nosec G402
+           Proxy:           http.ProxyFromEnvironment,             // required for coverage
+       }},
+   }
+   api := v1alpha1login.NewAPIClient(cfg).LoginApi
+   ```
+
+   The `E2E_API_COVERAGE` report only records calls that go through this client
+   over the proxy — hand-rolled HTTP requests are invisible to it.
+
+4. **Tag the suite with a module label** (lowercase-kebab). This is the token
+   `E2E_LABELS` filters on:
+
+   ```go
+   var _ = Describe("Project", Label("project"), func() { ... })
+   ```
+
+   Existing labels: `login`, `model`, `project`, `robot`, `sync-policy`,
+   `current-user`, `user`.
+
+5. **Give every `It` a unique case-ID label.** Format is a module prefix plus a
+   zero-padded sequence, `<PREFIX>NNNNN` (five digits):
+
+   ```go
+   It("should create a project", Label("P00001"), func() { ... })
+   ```
+
+   Existing prefixes: `CU` (current-user), `L` (login), `M` (model), `R`
+   (robot), `U` (user), `SP` (sync-policy — legacy four-digit `SPNNNN`). Pick a
+   free prefix for a new module and keep it unique so IDs stay traceable.
+
+6. **Mark exactly one happy-path case per module `smoke`** — the case the fast
+   CI sweep and `E2E_LABELS=smoke` run:
+
+   ```go
+   It("should log in with valid admin credentials", Label("L00001", "smoke"), func() { ... })
+   ```
+
+7. **Adding new API surface? Regenerate the client first.** Run
+   `make gen_openapi_sdk` (output: `test/client`) after the swagger/OpenAPI
+   changes so the typed client methods exist before you write the test.
+
 ## Development Tips
 
 ### Database
