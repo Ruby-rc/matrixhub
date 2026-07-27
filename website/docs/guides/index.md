@@ -1,9 +1,9 @@
 ---
-title: More guides
+title: More Features
 sidebar_position: 1
 ---
 
-# More guides
+# More Features
 
 This page collects additional task-oriented, step-by-step guides for developers, platform engineers, and AI operations teams working with MatrixHub.
 

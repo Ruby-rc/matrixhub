@@ -2,17 +2,17 @@
 sidebar_position: 2
 ---
 
-# vLLM 通过 MatrixHub 加载模型
+# vLLM 从 MatrixHub 加载模型
 
 ## 目标
 
-vLLM 通过 MatrixHub 加载模型并进行简单推理问答。
+vLLM 从 MatrixHub 加载模型并进行简单推理问答。
 
 ## 架构原理
 
 <img
   src={require('./images/vllm-matrixhub-architecture.png').default}
-  alt="vLLM 通过 MatrixHub 加载模型"
+  alt="vLLM 从 MatrixHub 加载模型"
   width="481"
 />
 

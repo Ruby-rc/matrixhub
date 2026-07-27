@@ -2,17 +2,17 @@
 sidebar_position: 2
 ---
 
-# Load a model into vLLM through MatrixHub
+# Load a model into vLLM from MatrixHub
 
 ## Goal
 
-Load a model into vLLM through MatrixHub and run a simple inference request.
+Load a model into vLLM from MatrixHub and run a simple inference request.
 
 ## Architecture
 
 <img
   src={require('./images/vllm-matrixhub-architecture.png').default}
-  alt="vLLM loads models through MatrixHub"
+  alt="vLLM loads models from MatrixHub"
   width="481"
 />
 
