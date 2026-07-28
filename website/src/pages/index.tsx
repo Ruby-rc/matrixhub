@@ -16,8 +16,6 @@ import {
   Globe
 } from 'lucide-react';
 
-
-
 // Intersection Observer Hook for scroll animations
 const useIntersectionObserver = (options = {}) => {
   const ref = useRef<HTMLDivElement>(null);
@@ -114,14 +112,7 @@ const TechLogo = ({ logo, name, index }: { logo: React.ReactNode, name: string, 
 };
 
 export default function Home(): React.ReactElement {
-  const [copied, setCopied] = useState(false);
   const [terminalLines, setTerminalLines] = useState<number[]>([]);
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText("curl -fsSL https://bit.ly/4qqSZIG | docker compose -f - up -d");
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
 
   // Terminal typing animation
   useEffect(() => {
@@ -184,8 +175,8 @@ export default function Home(): React.ReactElement {
 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
                   <Link
-                    to="/blog/deepseek-v4-distribution"
-                    className="px-6 sm:px-8 py-3 sm:py-4 bg-green-600 hover:bg-green-500 text-black rounded-lg font-bold text-base sm:text-lg transition-all shadow-[0_0_20px_rgba(22,163,74,0.4)] hover:shadow-[0_0_30px_rgba(22,163,74,0.6)] flex items-center justify-center gap-2 hover:text-black hover:no-underline hover:scale-105 transform"
+                    to="/docs/getting-started"
+                    className="homepage-quick-start px-6 sm:px-8 py-3 sm:py-4 bg-green-600 hover:bg-green-500 rounded-lg font-bold text-base sm:text-lg transition-all shadow-[0_0_20px_rgba(22,163,74,0.4)] hover:shadow-[0_0_30px_rgba(22,163,74,0.6)] flex items-center justify-center gap-2 hover:no-underline hover:scale-105 transform"
                   >
                     <Translate id="homepage.hero.quickStart">Quick Start</Translate> <ArrowRight size={20} />
                   </Link>
@@ -391,24 +382,13 @@ export default function Home(): React.ReactElement {
             <p className="text-base sm:text-lg lg:text-xl text-slate-400 mb-8 sm:mb-10">
               <Translate id="homepage.cta.subtitle">Deploy MatrixHub in minutes using Docker Compose or Helm. Open source and free for the community.</Translate>
             </p>
-            <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <div className="flex justify-center">
                <Link
-                 to="/docs/intro"
+                 to="/docs/installation"
                  className="px-6 sm:px-8 py-3 sm:py-4 bg-white text-black hover:bg-slate-200 rounded-lg font-bold text-base sm:text-lg transition-all hover:text-black hover:no-underline hover:scale-105 transform"
                >
-                  <Translate id="homepage.cta.button">Read the Docs</Translate>
+                  <Translate id="homepage.cta.button">Installation Guide</Translate>
                </Link>
-               <div className="flex items-center bg-[#0d1117] border border-slate-700 rounded-lg p-1 pr-2 sm:pr-4 hover:border-slate-600 transition-colors">
-                 <div className="px-3 sm:px-4 py-2 sm:py-3 text-slate-400 font-mono text-xs sm:text-sm truncate max-w-[200px] sm:max-w-none">
-                   curl -fsSL https://bit.ly/4qqSZIG | docker compose -f - up -d
-                 </div>
-                 <button
-                  onClick={handleCopy}
-                  className="ml-1 sm:ml-2 p-2 hover:bg-slate-800 rounded text-slate-400 hover:text-white transition-colors relative border-none cursor-pointer bg-transparent flex-shrink-0"
-                 >
-                   {copied ? <span className="text-green-500 font-bold text-xs"><Translate id="homepage.cta.copied">Copied!</Translate></span> : <span className="text-xs font-bold border border-slate-600 px-2 py-1 rounded hover:border-green-500 transition-colors"><Translate id="homepage.cta.copy">COPY</Translate></span>}
-                 </button>
-               </div>
             </div>
           </AnimatedSection>
         </section>

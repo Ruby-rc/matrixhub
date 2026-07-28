@@ -121,3 +121,8 @@ helm uninstall matrixhub --namespace "$NAMESPACE"
 ```
 
 This removes resources including the default PVCs created by the chart. To preserve data, use an existing PVC for MatrixHub data and an external database.
+
+## Get started
+
+After installation, start with
+[Cache models through a proxy project](../guides/mirror-from-huggingface.md).

@@ -375,6 +375,11 @@ html:not([data-scroll='0']) .navbar {
   font-size: 1.125rem;
 }
 
+.homepage-quick-start,
+.homepage-quick-start:hover {
+  color: #000000;
+}
+
 /* ==========================================
    Link Styles
    ========================================== */

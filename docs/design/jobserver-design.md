@@ -1,88 +1,139 @@
-# Jobserver Design
+# JobServer Technical Design
 
-## Context
+## Goals
 
-MatrixHub uses the jobserver to run background work in-process with the API
-server. The current sync policy scheduler follows a delayed-job style design
-for a single API server replica.
+JobServer runs cron-scheduled or manually triggered background jobs without
+blocking API requests. Model synchronization is the first use case; cleanup and
+other jobs can reuse the same framework.
 
-This document captures the current runtime behavior. It can be expanded as the
-jobserver design evolves.
+- Add each job type as an independent processor with its own concurrency and
+  timeout limits.
+- Persist and claim jobs in the database with compare-and-swap (CAS); no
+  external queue is needed.
+- Run with the API server to keep phase-one deployment simple.
 
-## Sync Policy Scheduling
+## Delayed-job architecture
 
-Sync scheduling uses `sync_policies.next_run_at`, stored in milliseconds. The
-jobserver runs in-process with the API server under `internal/jobserver`; there
-is no separate cron daemon process.
+All processors use the same delayed-job pattern. The following diagram uses
+`syncPolicy processor` as the example.
 
-The sync policy flow is:
+```mermaid
+%%{init: {"flowchart": {"nodeSpacing": 80, "rankSpacing": 90, "padding": 24}, "themeVariables": {"fontSize": "20px"}}}%%
+flowchart TB
+  subgraph API["API Server"]
+    direction TB
 
-1. The `sync_policy` processor polls due policies.
-2. It CAS-advances `next_run_at`.
-3. It calls `CreatePendingSyncTask` to insert a `sync_tasks` row with pending
-   status.
-4. The `sync_task` processor claims pending tasks.
-5. It calls `ExecuteSyncTask` to generate `sync_jobs` rows.
-6. The `sync_job` processor runs the git work.
+    subgraph JS["JobServer"]
+      direction LR
+      Timer["Immediate poll<br/>and periodic ticker"]
+      Processor["Sync Policy<br/>Processor"]
+      Timer -->|Trigger| Processor
+    end
+
+    Service["SyncPolicyService"]
+    Processor -->|Find and claim due policies| Service
+  end
+
+  subgraph DB["Database"]
+    direction LR
+    Policies[("sync_policies<br/>Schedule and claim")]
+    Tasks[("sync_tasks<br/>Pending task")]
+  end
+
+  Service -->|Select and CAS<br/>next_run_at| Policies
+  Service -->|Create| Tasks
+
+  classDef trigger fill:#DBEAFE,stroke:#2563EB,stroke-width:2px,color:#172554,font-size:20px
+  classDef processor fill:#EDE9FE,stroke:#7C3AED,stroke-width:3px,color:#2E1065,font-size:22px
+  classDef service fill:#DCFCE7,stroke:#16A34A,stroke-width:2px,color:#14532D,font-size:20px
+  classDef storage fill:#FFEDD5,stroke:#EA580C,stroke-width:2px,color:#7C2D12,font-size:20px
+
+  class Timer trigger
+  class Processor processor
+  class Service service
+  class Policies,Tasks storage
+```
+
+1. JobServer triggers the Sync Policy Processor at startup and on each tick.
+2. The processor asks `SyncPolicyService` for policies that are due to run.
+3. The service claims each policy by atomically advancing its `next_run_at`.
+4. For every claimed policy, the service creates a Pending sync task for the
+   next processor.
+
+### Detailed sequence
+
+```mermaid
+sequenceDiagram
+  participant Timer
+  participant Processor
+  participant Service
+  participant Database
+
+  Timer->>Processor: Poll
+  Processor->>Service: Find due policies
+  Service->>Database: Select due policy rows
+  Database-->>Service: Candidates
+
+  loop For each candidate
+    Service->>Database: CAS advance next run time
+    alt CAS succeeds
+      Database-->>Service: Claimed
+    else CAS fails
+      Database-->>Service: Skipped
+    end
+  end
+
+  Service-->>Processor: Claimed policies
+
+  loop For each claimed policy
+    Processor->>Service: Create Pending task
+    Service->>Database: Insert Pending sync task
+    Database-->>Service: Created
+    Service-->>Processor: Done
+  end
+
+  Processor-->>Timer: Wait for next tick
+```
+
+The other processors reuse the same structure:
+
+| Processor | Poll and claim | Execute |
+|---|---|---|
+| `syncPolicy` | Due `next_run_at`; CAS advances the schedule | Create a Pending task |
+| `syncTask` | Pending task; CAS to Running | Generate Pending jobs |
+| `syncJob` | Pending job; CAS to Running | Run Git synchronization |
+
+Manual synchronization skips `syncPolicy` and creates a Pending task directly.
+
+### Processing pipeline
+
+**Three-stage pipeline:** policy scheduling, job generation, and transfer
+execution can be tuned independently.
+
+```mermaid
+flowchart LR
+  Policy["Sync Policy Processor<br/>Schedule"]
+  Task["Sync Task Processor<br/>Generate jobs"]
+  Job["Sync Job Processor<br/>Synchronize model"]
+
+  Policy -->|"Pending sync task"| Task
+  Task -->|"Pending sync jobs"| Job
+
+  classDef processor fill:#EDE9FE,stroke:#7C3AED,stroke-width:2px,color:#2E1065,font-size:18px
+  class Policy,Task,Job processor
+```
 
 ## Configuration
 
-The relevant config block is `jobServer` in `config.yaml`.
+JobServer settings and defaults are defined under
+[`jobServer` in `values.yaml`](../../deploy/charts/matrixhub/values.yaml).
 
-- Set `jobServer.enabled: false` to disable inserting pending `sync_tasks` from
-  the poller. Manual API `CreateSyncTask` will only bump `next_run_at`.
-- Per-sync-policy tuning lives under `jobServer.syncPolicy`, including
-  `pollInterval`, `maxConcurrent`, and `taskMaxDuration`.
+## Phase-one boundaries
 
-## Database Schema
-
-Scheduling columns are in `0_init.up.sql`:
-
-- `cron`
-- `last_run_at`
-- `next_run_at`
-- `idx_due`
-
-Apply migrations with `database.migrate: true` or run the SQL under
-`db/migrations/sql/mysql/`.
-
-## Cron Syntax
-
-Cron expressions are validated with `github.com/robfig/cron/v3`.
-
-The scheduler supports five-field cron expressions and descriptors such as
-`@daily`.
-
-Example:
-
-```text
-0 * * * *
-```
-
-This runs hourly.
-
-## Current Limitations
-
-The current design is single-replica oriented. These capabilities are not part
-of the current release:
-
-- Stop task
-- Heartbeat
-- Reaper
-- Multi-replica fencing with `running_by` / `running_until`
-
-## Verification
-
-Verify jobserver logic without a database:
-
-```bash
-go test -v -count=1 ./internal/jobserver/...
-```
-
-Verify the full scheduler path end to end with MySQL and a migrated schema:
-
-1. Start MatrixHub with the jobserver enabled.
-2. Create or trigger a sync policy, either by scheduled cron or manual
-   `CreateSyncTask`.
-3. Confirm that pending `sync_tasks` rows are created.
-4. Watch logs for `jobserver: processor loop start`.
+- Run one JobServer-enabled API replica.
+- CAS prevents duplicate claim winners but does not provide execution leases.
+- Detected failures are recorded but not retried; abandoned work is not
+  recovered.
+- Cancellation and job logs are local to the API server process.
+- Multi-replica recovery, shared logs, retry policies, and worker metrics are
+  future improvements.

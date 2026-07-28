@@ -123,3 +123,7 @@ helm uninstall matrixhub --namespace "$NAMESPACE"
 ```
 
 此命令会删除 Chart 创建的资源，包括默认 PVC。如需保留数据，请为 MatrixHub 数据使用已有 PVC，并使用外部数据库。
+
+## 开始使用
+
+安装完成后，可以从 [通过代理项目缓存模型](../guides/mirror-from-huggingface.md) 开始。

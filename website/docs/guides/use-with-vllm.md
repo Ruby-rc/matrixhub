@@ -24,7 +24,7 @@ Load a model into vLLM from MatrixHub and run a simple inference request.
 
 ## Deploy vLLM
 
-### Option 1: Deploy vLLM in a container with nerdctl or Docker
+### Option 1: Deploy vLLM in a container with nerdctl or docker
 
 - To install the GPU driver, see [Install NVIDIA Container Toolkit for Docker deployment](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html).
 - To deploy vLLM, see [deploy vLLM using Docker](https://docs.vllm.ai/en/latest/deployment/docker/).
