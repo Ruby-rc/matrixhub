@@ -132,3 +132,8 @@ The download took approximately 15 seconds, showing that the model was cached in
 ## Conclusion
 
 The first on-demand download depends on upstream network speed. Later downloads come directly from the MatrixHub cache and are much faster.
+
+## Next step
+
+Follow [Load a model into vLLM from MatrixHub](./use-with-vllm.md) to run an
+inference request with the cached model.

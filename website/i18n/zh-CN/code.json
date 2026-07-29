@@ -439,13 +439,7 @@
     "message": "使用 Docker Compose 或 Helm 在几分钟内即可部署 MatrixHub。完全开源，对社区免费。"
   },
   "homepage.cta.button": {
-    "message": "阅读文档"
-  },
-  "homepage.cta.copied": {
-    "message": "已复制！"
-  },
-  "homepage.cta.copy": {
-    "message": "复制"
+    "message": "安装指南"
   },
   "changelog.title": {
     "message": "更新日志"

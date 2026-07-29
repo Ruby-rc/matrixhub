@@ -134,3 +134,7 @@ time hf download Qwen/Qwen3-0.6B
 ## 结论
 
 首次按需下载依赖外网网速，再次下载直接从 MatrixHub 缓存下载，速度大幅提升。
+
+## 下一步
+
+参考 [vLLM 从 MatrixHub 加载模型](./use-with-vllm.md)，使用已缓存的模型完成一次推理。

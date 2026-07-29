@@ -24,7 +24,7 @@ vLLM 从 MatrixHub 加载模型并进行简单推理问答。
 
 ## 部署 vLLM
 
-### 方法一：用 nerdctl 或 Docker 命令启动容器来部署 vLLM
+### 方法一：用 nerdctl 或 docker 命令启动容器来部署 vLLM
 
 - 安装 GPU 驱动，详见 [Install NVIDIA Container Toolkit for Docker deployment](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)
 - 部署 vLLM，详见 [deploy vLLM using Docker](https://docs.vllm.ai/en/latest/deployment/docker/)
