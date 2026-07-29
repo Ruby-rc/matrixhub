@@ -41,6 +41,8 @@ apiserver:
     port: 9527
     # -- node port
     nodePort: 30001
+    # -- SSH node port
+    sshNodePort: 30022
     # -- service annotations
     annotations: {}
 
@@ -72,6 +74,8 @@ apiserver:
 
   # -- api server port
   port: 9527
+  # -- ssh server port
+  sshPort: 22
 
   # -- externally-reachable base URL of this instance. Surfaced to the frontend
   # (used as `HF_ENDPOINT` for `hf` CLI snippets, etc). Leave empty to hide

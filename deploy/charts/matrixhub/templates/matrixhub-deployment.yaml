@@ -60,6 +60,9 @@ spec:
             - name: http
               containerPort: {{ .Values.apiserver.port }}
               protocol: TCP
+            - name: ssh
+              containerPort: {{ .Values.apiserver.sshPort }}
+              protocol: TCP
           readinessProbe:
             httpGet:
               path: /healthz
