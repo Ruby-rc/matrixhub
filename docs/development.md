@@ -255,10 +255,11 @@ MATRIXHUB_BASE_URL=http://localhost:3002 make test.e2e
 In CI the label is chosen automatically: PRs that touch `test/**` run the full
 suite, others run `smoke` (see `.github/workflows/auto-pr-ci.yaml`).
 
-The E2E runner invokes the `ginkgo` CLI. If it is not installed:
+The E2E runner invokes the `ginkgo` CLI. If it is not installed, install the
+version already pinned in `go.mod` (so the CLI and library never drift):
 
 ```bash
-go install github.com/onsi/ginkgo/v2/ginkgo@v2.32.0   # match onsi/ginkgo/v2 in go.mod
+go install github.com/onsi/ginkgo/v2/ginkgo@$(go list -m -f '{{.Version}}' github.com/onsi/ginkgo/v2)
 ```
 
 For a KIND-based E2E environment:
