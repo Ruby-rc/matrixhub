@@ -545,9 +545,6 @@ func (s *Server) openRepo(ctx context.Context, repoPath, repoName, service strin
 				}
 			case repository.GitUploadPack:
 				if s.mirror != nil {
-					if _, err := s.modelService.EnsureModel(ctx, project, name); err != nil {
-						return nil, fmt.Errorf("ensure model %s/%s: %w", project, name, err)
-					}
 					if err := s.modelService.CheckOrSyncFromRemote(ctx, project, name); err != nil {
 						log.Errorf("failed to sync from remote for %s/%s: %v", project, name, err)
 						return nil, err
