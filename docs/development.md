@@ -2,7 +2,7 @@
 
 This document describes how to run MatrixHub frontend and backend services locally.
 For backend package boundaries and dependency rules, see
-[Architecture Guide](architecture.md).
+[Code Architecture](code-architecture.md).
 
 ## Prerequisites
 

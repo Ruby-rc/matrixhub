@@ -126,7 +126,7 @@ comment with context. Maintainers may assign the issue once the person agrees or
    use the [Developer Guide](docs/development.md) to set up the local API, UI,
    database, generated code, and tests.
 6. **Make your change**, following the backend architecture rules in
-   [docs/architecture.md](docs/architecture.md) and the frontend rules in
+   [docs/code-architecture.md](docs/code-architecture.md) and the frontend rules in
    [ui/AGENTS.md](ui/AGENTS.md).
 7. **Add tests** for behavior changes and bug fixes, then run the relevant tests
    locally (see [Testing](#testing)).
@@ -185,7 +185,7 @@ the [README](README.md).
   ```
 
 - Follow the conventions and dependency direction described in
-  [docs/architecture.md](docs/architecture.md).
+  [docs/code-architecture.md](docs/code-architecture.md).
 
 ## Developer Certificate of Origin (DCO)
 
