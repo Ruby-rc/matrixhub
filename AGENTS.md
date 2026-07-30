@@ -1,5 +1,9 @@
 # MatrixHub Agent Instructions
 
-Follow the backend architecture rules in [`docs/architecture.md`](docs/architecture.md).
+Before writing or modifying code:
 
-For UI work, follow [`ui/AGENTS.md`](ui/AGENTS.md).
+1. For backend code, follow
+   [`docs/code-architecture.md`](docs/code-architecture.md).
+2. For UI code, follow [`ui/AGENTS.md`](ui/AGENTS.md).
+3. For local setup, development commands, and tests, follow
+   [`docs/development.md`](docs/development.md).
