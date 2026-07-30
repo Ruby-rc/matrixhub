@@ -58,7 +58,8 @@ type IModelService interface {
 	// Metadata sync
 	SyncMetadata(ctx context.Context, project, name string) error
 
-	// CheckOrSyncFromRemote synchronizes an existing proxy model from its remote registry.
+	// CheckOrSyncFromRemote ensures the model exists and synchronizes proxy models
+	// from their remote registry when needed.
 	CheckOrSyncFromRemote(ctx context.Context, project, name string) error
 }
 
@@ -365,10 +366,11 @@ func (s *ModelService) CheckOrSyncFromRemote(ctx context.Context, project, name 
 		return nil
 	}
 
-	mod, err := s.modelRepo.GetByProjectAndName(ctx, project, name)
+	mod, err := s.ensureModelRecord(ctx, project, name)
 	if err != nil {
-		return err
+		return fmt.Errorf("ensure model %s/%s: %w", project, name, err)
 	}
+
 	if !mod.ShouldSync() {
 		return nil
 	}
@@ -398,7 +400,14 @@ func (s *ModelService) EnsureModel(ctx context.Context, project, name string) (*
 	if err := validateModelPath(project, name); err != nil {
 		return nil, err
 	}
+	if _, err := s.projectRepo.GetProjectByName(ctx, project); err != nil {
+		return nil, err
+	}
 
+	return s.ensureModelRecord(ctx, project, name)
+}
+
+func (s *ModelService) ensureModelRecord(ctx context.Context, project, name string) (*Model, error) {
 	if mod, exists, err := s.findModel(ctx, project, name); err != nil {
 		return nil, err
 	} else if exists {

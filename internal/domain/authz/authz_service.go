@@ -19,6 +19,8 @@ import (
 	"errors"
 	"fmt"
 
+	"gorm.io/gorm"
+
 	"github.com/matrixhub-ai/matrixhub/internal/domain/auth"
 	"github.com/matrixhub-ai/matrixhub/internal/domain/project"
 	"github.com/matrixhub-ai/matrixhub/internal/domain/robot"
@@ -134,11 +136,14 @@ func (s *AuthzService) getRobotPermissions(ctx context.Context, id *robot.Identi
 
 // VerifyProjectPermissionByName resolves project name to ID, then verifies permission
 func (s *AuthzService) VerifyProjectPermissionByName(ctx context.Context, projectName string, perm role.Permission) (bool, error) {
-	project, err := s.projectRepo.GetProjectByName(ctx, projectName)
+	prj, err := s.projectRepo.GetProjectByName(ctx, projectName)
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return false, nil
+		}
 		return false, err
 	}
-	return s.verifyProjectPermission(ctx, project, perm)
+	return s.verifyProjectPermission(ctx, prj, perm)
 }
 
 // VerifyProjectPermission verifies project-level permission
