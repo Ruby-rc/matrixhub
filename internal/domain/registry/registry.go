@@ -53,6 +53,7 @@ func (r *Registry) SetCredential(c ICredential) {
 	r.AuthInfo = c.String()
 }
 
+//go:generate go tool mockgen -source=registry.go -destination=mocks/registry_repo_mock.go -package=mocks
 type IRegistryRepo interface {
 	ListRegistries(ctx context.Context, page, pageSize int, search string) ([]*Registry, int64, error)
 	GetRegistry(ctx context.Context, id int) (*Registry, error)

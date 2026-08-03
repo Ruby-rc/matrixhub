@@ -2999,6 +2999,8 @@ func (m *Model) validate(all bool) error {
 
 	// no validation rules for Popular
 
+	// no validation rules for SyncedAt
+
 	if len(errors) > 0 {
 		return ModelMultiError(errors)
 	}

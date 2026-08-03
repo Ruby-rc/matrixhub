@@ -1300,6 +1300,7 @@ type Model struct {
 	Size           string                 `protobuf:"bytes,11,opt,name=size,proto3" json:"size,omitempty"`
 	ParameterCount string                 `protobuf:"bytes,12,opt,name=parameter_count,json=parameterCount,proto3" json:"parameter_count,omitempty"`
 	Popular        bool                   `protobuf:"varint,13,opt,name=popular,proto3" json:"popular,omitempty"`
+	SyncedAt       string                 `protobuf:"bytes,14,opt,name=synced_at,json=syncedAt,proto3" json:"synced_at,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -1423,6 +1424,13 @@ func (x *Model) GetPopular() bool {
 		return x.Popular
 	}
 	return false
+}
+
+func (x *Model) GetSyncedAt() string {
+	if x != nil {
+		return x.SyncedAt
+	}
+	return ""
 }
 
 type CloneUrls struct {
@@ -1888,7 +1896,7 @@ const file_v1alpha1_model_proto_rawDesc = "" +
 	"\aproject\x18\x01 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\aproject\x12>\n" +
 	"\x04name\x18\x02 \x01(\tB*\xfaB'r%\x10\x01Z\x06modelsZ\bdatasetsZ\x06spacesZ\aresolveR\x04name\x12\x1a\n" +
 	"\brevision\x18\x03 \x01(\tR\brevision\x12\x12\n" +
-	"\x04path\x18\x04 \x01(\tR\x04path\"\xb5\x03\n" +
+	"\x04path\x18\x04 \x01(\tR\x04path\"\xd2\x03\n" +
 	"\x05Model\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x05R\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1a\n" +
@@ -1906,7 +1914,8 @@ const file_v1alpha1_model_proto_rawDesc = "" +
 	" \x01(\tR\rreadmeContent\x12\x12\n" +
 	"\x04size\x18\v \x01(\tR\x04size\x12'\n" +
 	"\x0fparameter_count\x18\f \x01(\tR\x0eparameterCount\x12\x18\n" +
-	"\apopular\x18\r \x01(\bR\apopular\"?\n" +
+	"\apopular\x18\r \x01(\bR\apopular\x12\x1b\n" +
+	"\tsynced_at\x18\x0e \x01(\tR\bsyncedAt\"?\n" +
 	"\tCloneUrls\x12\x17\n" +
 	"\assh_url\x18\x01 \x01(\tR\x06sshUrl\x12\x19\n" +
 	"\bhttp_url\x18\x02 \x01(\tR\ahttpUrl\"\x1e\n" +

@@ -19,6 +19,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/matrixhub-ai/matrixhub/internal/domain/git"
 	"github.com/matrixhub-ai/matrixhub/internal/domain/project"
@@ -370,7 +371,6 @@ func (s *ModelService) CheckOrSyncFromRemote(ctx context.Context, project, name 
 	if err != nil {
 		return fmt.Errorf("ensure model %s/%s: %w", project, name, err)
 	}
-
 	if !mod.ShouldSync() {
 		return nil
 	}
@@ -392,6 +392,10 @@ func (s *ModelService) CheckOrSyncFromRemote(ctx context.Context, project, name 
 	}
 	if err = s.SyncMetadata(ctx, project, name); err != nil {
 		return err
+	}
+	syncedAt := time.Now()
+	if err = s.modelRepo.UpdateSyncedAt(ctx, mod.ID, &syncedAt); err != nil {
+		return fmt.Errorf("update last synced time for model %s/%s: %w", project, name, err)
 	}
 	return nil
 }

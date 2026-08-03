@@ -104,6 +104,8 @@ type Member struct {
 }
 
 // IProjectRepo defines the project repository interface
+//
+//go:generate go tool mockgen -source=project.go -destination=mocks/project_repo_mock.go -package=mocks
 type IProjectRepo interface {
 	CreateProject(ctx context.Context, project *Project) (*Project, error)
 	GetProjectByID(ctx context.Context, id int) (*Project, error)

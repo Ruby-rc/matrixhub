@@ -805,6 +805,9 @@
         },
         "popular": {
           "type": "boolean"
+        },
+        "syncedAt": {
+          "type": "string"
         }
       }
     },

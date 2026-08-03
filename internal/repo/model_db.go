@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"gorm.io/gorm"
 
@@ -56,7 +57,7 @@ func (m *modelDB) List(ctx context.Context, filter *model.Filter) ([]*model.Mode
 		Table("models m").
 		Select(`m.id, m.name, m.project_id, m.size, m.parameter_count,
 				m.readme_content, m.is_popular, m.default_branch,
-				m.created_at, m.updated_at,
+				m.synced_at, m.created_at, m.updated_at,
 				p.name as project_name`).
 		Joins("INNER JOIN projects p ON m.project_id = p.id")
 
@@ -191,7 +192,8 @@ func (m *modelDB) GetByProjectAndName(ctx context.Context, project, name string)
 		Table("models m").
 		Select(`m.id, m.name, m.project_id, m.size, m.parameter_count,
 				m.readme_content, m.is_popular, m.default_branch,
-				m.created_at, m.updated_at, p.name as project_name`).
+				m.synced_at, m.created_at, m.updated_at,
+				p.name as project_name`).
 		Joins("INNER JOIN projects p ON m.project_id = p.id").
 		Where("p.name = ? AND m.name = ?", project, name).
 		First(&mod).Error
@@ -259,6 +261,18 @@ func (m *modelDB) UpdateMetadata(ctx context.Context, modelID int64, update *mod
 		Updates(updates)
 
 	return result.Error
+}
+
+// UpdateSyncedAt records the completion time of a successful synchronization.
+func (m *modelDB) UpdateSyncedAt(ctx context.Context, modelID int64, syncedAt *time.Time) error {
+	var value interface{}
+	if syncedAt != nil {
+		value = *syncedAt
+	}
+	return m.db.WithContext(ctx).
+		Table("models").
+		Where("id = ?", modelID).
+		UpdateColumn("synced_at", value).Error
 }
 
 // UpdateSetting updates model settings (e.g., popular flag).

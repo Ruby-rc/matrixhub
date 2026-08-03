@@ -210,6 +210,7 @@ message Model {
   string size = 11;
   string parameter_count = 12;
   bool   popular = 13;
+  string synced_at = 14;
 }
 
 message CloneUrls {
