@@ -10,7 +10,7 @@ MatrixHub is an open-source, self-hosted model registry and distribution system 
 - Private deployment, caching, governance, replication, and air-gapped workflows
 - Cloud-native operation (Kubernetes, Helm, object storage)
 
-Out of scope items are tracked in the [public roadmap](docs/roadmap.md) and discussed in GitHub issues or [Discussions](https://github.com/matrixhub-ai/matrixhub/discussions); large changes should be discussed there before substantial implementation.
+Out of scope items are tracked in the [public roadmap](ROADMAP.md) and discussed in GitHub issues or [Discussions](https://github.com/matrixhub-ai/matrixhub/discussions); large changes should be discussed there before substantial implementation.
 
 ## Roles
 
@@ -84,7 +84,7 @@ Security reporting and response are defined in [SECURITY.md](SECURITY.md). Maint
 
 - **Issues / PRs:** Primary development venue on GitHub.
 - **Slack:** [CNCF Slack `#matrixhub`](https://cloud-native.slack.com/archives/C0A8UKWR8HG) for community discussion.
-- **Public roadmap:** [docs/roadmap.md](docs/roadmap.md)
+- **Public roadmap:** [ROADMAP.md](ROADMAP.md)
 
 ## Amending this document
 

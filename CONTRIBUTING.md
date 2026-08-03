@@ -29,7 +29,7 @@ and
 - **GitHub Issues / Pull Requests** — primary development venue.
 - **GitHub Discussions** — questions, ideas, and broader design conversations.
 - **Slack** — [`#matrixhub`](https://cloud-native.slack.com/archives/C0A8UKWR8HG) in the CNCF Slack workspace.
-- **Public roadmap** — [docs/roadmap.md](docs/roadmap.md).
+- **Public roadmap** — [ROADMAP.md](ROADMAP.md).
 
 ## Reporting issues
 
