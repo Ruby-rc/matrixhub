@@ -46,7 +46,7 @@ No breaking changes from **v0.1.0**. Existing deployments can keep their current
 
 ## v0.1.0
 
-MatrixHub **v0.1.0** is the first official release. It matches the code shipped in `v0.1.0-rc.1` and delivers the **V0 / M0–M1 baseline** described in the [roadmap](../docs/roadmap.md): a self-hosted, Hugging Face–compatible model registry for private inference clusters.
+MatrixHub **v0.1.0** is the first official release. It matches the code shipped in `v0.1.0-rc.1` and establishes the project's initial baseline as a self-hosted, Hugging Face–compatible model registry for private inference clusters.
 
 ### Downloads
 
@@ -108,7 +108,7 @@ See the [README](../README.md) and [documentation site](https://matrixhub.ai) fo
 
 ### Known limitations
 
-The following items are on the [roadmap](../docs/roadmap.md) but **not** part of v0.1.0:
+The following items are on the [roadmap](../ROADMAP.md) but **not** part of v0.1.0:
 
 - Full LDAP/OIDC/SSO integration
 - Storage quotas and automated cleanup policies (design in progress)

@@ -159,7 +159,7 @@ or the [CNCF Slack `#matrixhub`](https://cloud-native.slack.com/archives/C0A8UKW
 for questions, ideas, and support.
 
 - [Documentation site](https://matrixhub.ai)
-- [Roadmap](docs/roadmap.md)
+- [Roadmap](ROADMAP.md)
 
 ## Security
 
