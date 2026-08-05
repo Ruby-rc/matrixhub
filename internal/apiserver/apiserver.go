@@ -269,7 +269,6 @@ func (server *APIServer) initGitStorage() {
 		mirror.WithPushXET(true),
 		mirror.WithPullXET(false),
 		mirror.WithConcurrency(2),
-		mirror.WithTTL(time.Minute),
 		mirror.WithCacheDir(storage.TmpDir()),
 	)
 

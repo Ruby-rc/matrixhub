@@ -85,12 +85,12 @@ func modelToProto(m *model.Model) *modelv1alpha1.Model {
 			UpdatedAt: l.UpdatedAt.Format(time.RFC3339),
 		}
 	}
-
 	return &modelv1alpha1.Model{
 		Id:            int32(m.ID),
 		Name:          m.Name,
 		Nickname:      "", // Not implemented yet
 		DefaultBranch: m.DefaultBranch,
+		SyncedAt:      formatOptionalTime(m.SyncedAt),
 		CreatedAt:     m.CreatedAt.Format(time.RFC3339),
 		UpdatedAt:     m.UpdatedAt.Format(time.RFC3339),
 		CloneUrls: &modelv1alpha1.CloneUrls{
@@ -104,6 +104,13 @@ func modelToProto(m *model.Model) *modelv1alpha1.Model {
 		ParameterCount: formatParameterCount(m.ParameterCount),
 		Popular:        m.IsPopular,
 	}
+}
+
+func formatOptionalTime(value *time.Time) string {
+	if value == nil {
+		return ""
+	}
+	return value.Format(time.RFC3339)
 }
 
 // revisionToProto converts domain git.Revision to proto Revision

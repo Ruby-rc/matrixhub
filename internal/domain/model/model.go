@@ -19,20 +19,29 @@ import (
 	"time"
 )
 
+const modelSyncTTL = time.Minute
+
 // Model represents an AI model in the system.
 type Model struct {
-	ID             int64     `json:"id" db:"id"`
-	Name           string    `json:"name" db:"name"`
-	ProjectID      int       `json:"projectId" db:"project_id"`
-	ProjectName    string    `json:"projectName" db:"project_name" gorm:"<-:false"` // Read-only, not writable
-	Size           int64     `json:"size" db:"size"`
-	DefaultBranch  string    `json:"defaultBranch" db:"default_branch"`
-	ParameterCount int64     `json:"parameterCount" db:"parameter_count"`
-	ReadmeContent  string    `json:"readmeContent" db:"readme_content"`
-	IsPopular      bool      `json:"isPopular" db:"is_popular"`
-	Labels         []Label   `json:"labels" db:"-" gorm:"-"`
-	CreatedAt      time.Time `json:"createdAt" db:"created_at"`
-	UpdatedAt      time.Time `json:"updatedAt" db:"updated_at"`
+	ID             int64      `json:"id" db:"id"`
+	Name           string     `json:"name" db:"name"`
+	ProjectID      int        `json:"projectId" db:"project_id"`
+	ProjectName    string     `json:"projectName" db:"project_name" gorm:"<-:false"` // Read-only, not writable
+	Size           int64      `json:"size" db:"size"`
+	DefaultBranch  string     `json:"defaultBranch" db:"default_branch"`
+	ParameterCount int64      `json:"parameterCount" db:"parameter_count"`
+	ReadmeContent  string     `json:"readmeContent" db:"readme_content"`
+	IsPopular      bool       `json:"isPopular" db:"is_popular"`
+	Labels         []Label    `json:"labels" db:"-" gorm:"-"`
+	SyncedAt       *time.Time `json:"syncedAt" db:"synced_at"`
+	CreatedAt      time.Time  `json:"createdAt" db:"created_at"`
+	UpdatedAt      time.Time  `json:"updatedAt" db:"updated_at"`
+}
+
+// ShouldSync reports whether the model has never been synchronized or its
+// synchronization TTL has expired.
+func (m *Model) ShouldSync() bool {
+	return m.SyncedAt == nil || time.Since(*m.SyncedAt) >= modelSyncTTL
 }
 
 // Label represents a category label for models/datasets.
@@ -64,10 +73,6 @@ type MetadataUpdate struct {
 	ParameterCount *int64
 }
 
-func (m *Model) ShouldSync() bool {
-	return time.Since(m.UpdatedAt) >= time.Minute
-}
-
 // SettingUpdate contains optional fields for updating model settings.
 type SettingUpdate struct {
 	IsPopular *bool
@@ -91,6 +96,10 @@ type IModelRepo interface {
 
 	// UpdateMetadata updates selected metadata fields for a model.
 	UpdateMetadata(ctx context.Context, modelID int64, update *MetadataUpdate) error
+
+	// UpdateSyncedAt records the completion time of the latest successful synchronization.
+	// A nil value clears the timestamp so the next request synchronizes immediately.
+	UpdateSyncedAt(ctx context.Context, modelID int64, syncedAt *time.Time) error
 
 	// UpdateSetting updates model settings (e.g., popular flag).
 	UpdateSetting(ctx context.Context, modelID int64, update *SettingUpdate) error

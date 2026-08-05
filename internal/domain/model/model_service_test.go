@@ -23,25 +23,40 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
+	"github.com/matrixhub-ai/matrixhub/internal/domain/git"
 	gitmocks "github.com/matrixhub-ai/matrixhub/internal/domain/git/mocks"
 	"github.com/matrixhub-ai/matrixhub/internal/domain/model"
 	modelmocks "github.com/matrixhub-ai/matrixhub/internal/domain/model/mocks"
 	"github.com/matrixhub-ai/matrixhub/internal/domain/project"
+	projectmocks "github.com/matrixhub-ai/matrixhub/internal/domain/project/mocks"
+	"github.com/matrixhub-ai/matrixhub/internal/domain/registry"
+	registrymocks "github.com/matrixhub-ai/matrixhub/internal/domain/registry/mocks"
 )
 
-type projectRepoStub struct {
-	project.IProjectRepo
-	getProjectByName func(context.Context, string) (*project.Project, error)
+func newProjectRepoMock(ctrl *gomock.Controller) *projectmocks.MockIProjectRepo {
+	repo := projectmocks.NewMockIProjectRepo(ctrl)
+	repo.EXPECT().
+		GetProjectByName(gomock.Any(), "proj").
+		Return(&project.Project{Name: "proj"}, nil)
+	return repo
 }
 
-func newProjectRepoStub() *projectRepoStub {
-	return &projectRepoStub{getProjectByName: func(context.Context, string) (*project.Project, error) {
-		return &project.Project{Name: "proj"}, nil
-	}}
-}
+func newProxyRepoMocks(ctrl *gomock.Controller) (*projectmocks.MockIProjectRepo, *registrymocks.MockIRegistryRepo) {
+	registryID := 1
+	projectRepo := projectmocks.NewMockIProjectRepo(ctrl)
+	projectRepo.EXPECT().
+		GetProjectByName(gomock.Any(), "proj").
+		Return(&project.Project{
+			Name:         "proj",
+			RegistryID:   &registryID,
+			Organization: "upstream-org",
+		}, nil)
 
-func (s *projectRepoStub) GetProjectByName(ctx context.Context, name string) (*project.Project, error) {
-	return s.getProjectByName(ctx, name)
+	registryRepo := registrymocks.NewMockIRegistryRepo(ctrl)
+	registryRepo.EXPECT().
+		GetRegistry(gomock.Any(), registryID).
+		Return(&registry.Registry{ID: registryID, URL: "https://huggingface.co"}, nil)
+	return projectRepo, registryRepo
 }
 
 func TestModelService_EnsureModelReturnsExistingModel(t *testing.T) {
@@ -55,13 +70,12 @@ func TestModelService_EnsureModelReturnsExistingModel(t *testing.T) {
 		GetByProjectAndName(ctx, "proj", "model").
 		Return(want, nil)
 
-	service := model.NewModelService(modelRepo, nil, gitRepo, newProjectRepoStub(), nil)
+	service := model.NewModelService(modelRepo, nil, gitRepo, newProjectRepoMock(ctrl), nil)
 	got, err := service.EnsureModel(ctx, "proj", "model")
 
 	require.NoError(t, err)
 	require.Same(t, want, got)
 }
-
 func TestModelService_EnsureModelCreatesRepoAndModelWhenBothMissing(t *testing.T) {
 	ctx := context.Background()
 	ctrl := gomock.NewController(t)
@@ -85,7 +99,7 @@ func TestModelService_EnsureModelCreatesRepoAndModelWhenBothMissing(t *testing.T
 			Return(want, nil),
 	)
 
-	service := model.NewModelService(modelRepo, nil, gitRepo, newProjectRepoStub(), nil)
+	service := model.NewModelService(modelRepo, nil, gitRepo, newProjectRepoMock(ctrl), nil)
 	got, err := service.EnsureModel(ctx, "proj", "model")
 
 	require.NoError(t, err)
@@ -112,7 +126,7 @@ func TestModelService_EnsureModelCreatesOnlyModelWhenRepoExists(t *testing.T) {
 			Return(want, nil),
 	)
 
-	service := model.NewModelService(modelRepo, nil, gitRepo, newProjectRepoStub(), nil)
+	service := model.NewModelService(modelRepo, nil, gitRepo, newProjectRepoMock(ctrl), nil)
 	got, err := service.EnsureModel(ctx, "proj", "model")
 
 	require.NoError(t, err)
@@ -130,7 +144,7 @@ func TestModelService_EnsureModelPropagatesModelLookupError(t *testing.T) {
 		GetByProjectAndName(ctx, "proj", "model").
 		Return(nil, wantErr)
 
-	service := model.NewModelService(modelRepo, nil, gitRepo, newProjectRepoStub(), nil)
+	service := model.NewModelService(modelRepo, nil, gitRepo, newProjectRepoMock(ctrl), nil)
 	got, err := service.EnsureModel(ctx, "proj", "model")
 
 	require.ErrorIs(t, err, wantErr)
@@ -142,14 +156,16 @@ func TestModelService_CheckOrSyncFromRemoteReturnsForNonProxyProject(t *testing.
 	ctrl := gomock.NewController(t)
 	modelRepo := modelmocks.NewMockIModelRepo(ctrl)
 	gitRepo := gitmocks.NewMockIGitRepo(ctrl)
+	projectRepo := projectmocks.NewMockIProjectRepo(ctrl)
+	projectRepo.EXPECT().
+		GetProjectByName(ctx, "proj").
+		Return(&project.Project{Name: "proj"}, nil)
 
 	service := model.NewModelService(
 		modelRepo,
 		nil,
 		gitRepo,
-		&projectRepoStub{getProjectByName: func(context.Context, string) (*project.Project, error) {
-			return &project.Project{Name: "proj"}, nil
-		}},
+		projectRepo,
 		nil,
 	)
 
@@ -158,31 +174,181 @@ func TestModelService_CheckOrSyncFromRemoteReturnsForNonProxyProject(t *testing.
 	require.NoError(t, err)
 }
 
-func TestModelService_CheckOrSyncFromRemoteUsesEnsuredModel(t *testing.T) {
+func TestModelService_CheckOrSyncFromRemoteSkipsFreshExistingModel(t *testing.T) {
 	ctx := context.Background()
 	ctrl := gomock.NewController(t)
 	modelRepo := modelmocks.NewMockIModelRepo(ctrl)
 	gitRepo := gitmocks.NewMockIGitRepo(ctrl)
+	projectRepo := projectmocks.NewMockIProjectRepo(ctrl)
 	registryID := 1
+	syncedAt := time.Now()
+	projectRepo.EXPECT().
+		GetProjectByName(ctx, "proj").
+		Return(&project.Project{
+			Name:         "proj",
+			RegistryID:   &registryID,
+			Organization: "upstream-org",
+		}, nil)
 
 	modelRepo.EXPECT().
 		GetByProjectAndName(ctx, "proj", "model").
 		Return(&model.Model{
 			Name:        "model",
 			ProjectName: "proj",
-			UpdatedAt:   time.Now().Add(time.Minute),
+			SyncedAt:    &syncedAt,
 		}, nil)
 
 	service := model.NewModelService(
 		modelRepo,
 		nil,
 		gitRepo,
-		&projectRepoStub{getProjectByName: func(context.Context, string) (*project.Project, error) {
-			return &project.Project{Name: "proj", RegistryID: &registryID}, nil
-		}},
+		projectRepo,
 		nil,
 	)
 
+	err := service.CheckOrSyncFromRemote(ctx, "proj", "model")
+
+	require.NoError(t, err)
+}
+
+func TestModelService_CheckOrSyncFromRemoteSyncsNewModelImmediately(t *testing.T) {
+	ctx := context.Background()
+	ctrl := gomock.NewController(t)
+	modelRepo := modelmocks.NewMockIModelRepo(ctrl)
+	gitRepo := gitmocks.NewMockIGitRepo(ctrl)
+	projectRepo, registryRepo := newProxyRepoMocks(ctrl)
+	pullErr := errors.New("pull attempted")
+	createdModel := &model.Model{
+		ID:          42,
+		Name:        "model",
+		ProjectName: "proj",
+	}
+
+	gomock.InOrder(
+		modelRepo.EXPECT().
+			GetByProjectAndName(ctx, "proj", "model").
+			Return(nil, errors.New("model not found")),
+		gitRepo.EXPECT().
+			RepositoryExists(ctx, "models", "proj", "model").
+			Return(false, nil),
+		gitRepo.EXPECT().
+			CreateRepository(ctx, "models", "proj", "model").
+			Return(nil),
+		modelRepo.EXPECT().
+			Create(ctx, &model.Model{Name: "model", ProjectName: "proj"}).
+			Return(createdModel, nil),
+		gitRepo.EXPECT().
+			PullFromRemote(ctx, &git.GitRepository{
+				RemoteRegistryURL:  "https://huggingface.co",
+				RemoteProjectName:  "upstream-org",
+				RemoteResourceName: "model",
+				ProjectName:        "proj",
+				ResourceName:       "model",
+				ResourceType:       "model",
+			}).
+			Return(pullErr),
+	)
+
+	service := model.NewModelService(
+		modelRepo,
+		nil,
+		gitRepo,
+		projectRepo,
+		registryRepo,
+	)
+
+	err := service.CheckOrSyncFromRemote(ctx, "proj", "model")
+
+	require.ErrorIs(t, err, pullErr)
+}
+
+func TestModelService_CheckOrSyncFromRemoteSyncsStaleExistingModel(t *testing.T) {
+	ctx := context.Background()
+	ctrl := gomock.NewController(t)
+	modelRepo := modelmocks.NewMockIModelRepo(ctrl)
+	gitRepo := gitmocks.NewMockIGitRepo(ctrl)
+	projectRepo, registryRepo := newProxyRepoMocks(ctrl)
+	pullErr := errors.New("pull attempted")
+	syncedAt := time.Now().Add(-2 * time.Minute)
+
+	modelRepo.EXPECT().
+		GetByProjectAndName(ctx, "proj", "model").
+		Return(&model.Model{
+			ID:          42,
+			Name:        "model",
+			ProjectName: "proj",
+			SyncedAt:    &syncedAt,
+		}, nil)
+	gitRepo.EXPECT().
+		PullFromRemote(ctx, &git.GitRepository{
+			RemoteRegistryURL:  "https://huggingface.co",
+			RemoteProjectName:  "upstream-org",
+			RemoteResourceName: "model",
+			ProjectName:        "proj",
+			ResourceName:       "model",
+			ResourceType:       "model",
+		}).
+		Return(pullErr)
+
+	service := model.NewModelService(
+		modelRepo,
+		nil,
+		gitRepo,
+		projectRepo,
+		registryRepo,
+	)
+
+	err := service.CheckOrSyncFromRemote(ctx, "proj", "model")
+
+	require.ErrorIs(t, err, pullErr)
+}
+
+func TestModelService_CheckOrSyncFromRemoteRecordsSuccessfulSync(t *testing.T) {
+	ctx := context.Background()
+	ctrl := gomock.NewController(t)
+	modelRepo := modelmocks.NewMockIModelRepo(ctrl)
+	labelRepo := modelmocks.NewMockILabelRepo(ctrl)
+	gitRepo := gitmocks.NewMockIGitRepo(ctrl)
+	projectRepo, registryRepo := newProxyRepoMocks(ctrl)
+	mod := &model.Model{ID: 42, Name: "model", ProjectName: "proj"}
+	syncStartedAt := time.Now()
+
+	gomock.InOrder(
+		modelRepo.EXPECT().
+			GetByProjectAndName(ctx, "proj", "model").
+			Return(mod, nil),
+		gitRepo.EXPECT().
+			PullFromRemote(ctx, &git.GitRepository{
+				RemoteRegistryURL:  "https://huggingface.co",
+				RemoteProjectName:  "upstream-org",
+				RemoteResourceName: "model",
+				ProjectName:        "proj",
+				ResourceName:       "model",
+				ResourceType:       "model",
+			}).
+			Return(nil),
+		modelRepo.EXPECT().
+			GetByProjectAndName(ctx, "proj", "model").
+			Return(mod, nil),
+		gitRepo.EXPECT().
+			ExtractMetadata(ctx, "models", "proj", "model").
+			Return(&git.RepoMetadataFiles{}, nil),
+		modelRepo.EXPECT().
+			UpdateMetadata(ctx, int64(42), gomock.Any()).
+			Return(nil),
+		labelRepo.EXPECT().
+			UpdateModelLabels(ctx, int64(42), []int(nil)).
+			Return(nil),
+		modelRepo.EXPECT().
+			UpdateSyncedAt(ctx, int64(42), gomock.Any()).
+			DoAndReturn(func(_ context.Context, _ int64, syncedAt *time.Time) error {
+				require.NotNil(t, syncedAt)
+				require.False(t, syncedAt.Before(syncStartedAt))
+				return nil
+			}),
+	)
+
+	service := model.NewModelService(modelRepo, labelRepo, gitRepo, projectRepo, registryRepo)
 	err := service.CheckOrSyncFromRemote(ctx, "proj", "model")
 
 	require.NoError(t, err)
@@ -193,15 +359,17 @@ func TestModelService_EnsureModelPropagatesProjectLookupError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	modelRepo := modelmocks.NewMockIModelRepo(ctrl)
 	gitRepo := gitmocks.NewMockIGitRepo(ctrl)
+	projectRepo := projectmocks.NewMockIProjectRepo(ctrl)
 	wantErr := errors.New("project not found")
+	projectRepo.EXPECT().
+		GetProjectByName(ctx, "proj").
+		Return(nil, wantErr)
 
 	service := model.NewModelService(
 		modelRepo,
 		nil,
 		gitRepo,
-		&projectRepoStub{getProjectByName: func(context.Context, string) (*project.Project, error) {
-			return nil, wantErr
-		}},
+		projectRepo,
 		nil,
 	)
 

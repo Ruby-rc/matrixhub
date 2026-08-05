@@ -148,6 +148,7 @@ export type Model = {
   size?: string
   parameterCount?: string
   popular?: boolean
+  syncedAt?: string
 }
 
 export type CloneUrls = {

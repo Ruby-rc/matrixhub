@@ -12,6 +12,7 @@ package mocks
 import (
 	context "context"
 	reflect "reflect"
+	time "time"
 
 	model "github.com/matrixhub-ai/matrixhub/internal/domain/model"
 	gomock "go.uber.org/mock/gomock"
@@ -142,6 +143,20 @@ func (m *MockIModelRepo) UpdateSetting(ctx context.Context, modelID int64, updat
 func (mr *MockIModelRepoMockRecorder) UpdateSetting(ctx, modelID, update any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSetting", reflect.TypeOf((*MockIModelRepo)(nil).UpdateSetting), ctx, modelID, update)
+}
+
+// UpdateSyncedAt mocks base method.
+func (m *MockIModelRepo) UpdateSyncedAt(ctx context.Context, modelID int64, syncedAt *time.Time) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateSyncedAt", ctx, modelID, syncedAt)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateSyncedAt indicates an expected call of UpdateSyncedAt.
+func (mr *MockIModelRepoMockRecorder) UpdateSyncedAt(ctx, modelID, syncedAt any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSyncedAt", reflect.TypeOf((*MockIModelRepo)(nil).UpdateSyncedAt), ctx, modelID, syncedAt)
 }
 
 // MockILabelRepo is a mock of ILabelRepo interface.
