@@ -43,6 +43,15 @@ var _ = Describe("SyncPolicy Wildcard Discovery", Label("sync-policy", "git"), f
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 		defer cancel()
 
+		// The registry URL is dereferenced by the job server, not by this test
+		// process, so it must be an address that is routable from inside the
+		// deployment. tools.GetBaseURL() is not: under KIND it is a NodePort on
+		// the host. Skip rather than guess.
+		selfURL := tools.GetSelfURL()
+		if selfURL == "" {
+			Skip(fmt.Sprintf("%s not set: no server-reachable MatrixHub URL to use as a stand-in registry", tools.EnvMatrixHubSelfURL))
+		}
+
 		api := tools.GetV1alpha1SyncPolicyApi()
 		modelsApi := tools.GetV1alpha1ModelsApi()
 
@@ -65,10 +74,10 @@ var _ = Describe("SyncPolicy Wildcard Discovery", Label("sync-policy", "git"), f
 		Expect(err).NotTo(HaveOccurred())
 		defer target.Cleanup(ctx)
 
-		// The registry URL is this very instance. If discovery ignored it and
+		// The registry URL is this very deployment. If discovery ignored it and
 		// went to huggingface.co, the randomly-named namespace would not exist
 		// there and no jobs would be generated.
-		registry, err := tools.CreateHuggingFaceRegistryFixture(ctx, "e2e-wc", tools.GetBaseURL())
+		registry, err := tools.CreateHuggingFaceRegistryFixture(ctx, "e2e-wc", selfURL)
 		Expect(err).NotTo(HaveOccurred())
 		defer registry.Cleanup(ctx)
 		Expect(registry.ID).To(BeNumerically(">", 0))
