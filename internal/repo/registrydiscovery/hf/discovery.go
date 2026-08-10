@@ -54,6 +54,17 @@ func New(opts ...Option) *Discovery {
 	return d
 }
 
+// endpointBase returns the API base for a registry. A registry configured with
+// its own URL (an HF mirror or proxy) must be honoured here, the same way the
+// pull path honours it — otherwise discovery would match against the public Hub
+// while the actual sync pulls from the mirror.
+func (d *Discovery) endpointBase(reg *registry.Registry) string {
+	if reg != nil && reg.URL != "" {
+		return strings.TrimSuffix(reg.URL, "/")
+	}
+	return strings.TrimSuffix(d.baseURL, "/")
+}
+
 // ListRepositories queries the HuggingFace Hub API and returns matching repositories.
 func (d *Discovery) ListRepositories(ctx context.Context, reg *registry.Registry, filter registrydiscovery.Filter) ([]registrydiscovery.RemoteRepository, error) {
 	endpoint := "/api/models"
@@ -61,7 +72,7 @@ func (d *Discovery) ListRepositories(ctx context.Context, reg *registry.Registry
 		endpoint = "/api/datasets"
 	}
 
-	u := fmt.Sprintf("%s%s?author=%s&limit=100", d.baseURL, endpoint, filter.Namespace)
+	u := fmt.Sprintf("%s%s?author=%s&limit=100", d.endpointBase(reg), endpoint, filter.Namespace)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
 	if err != nil {
 		return nil, fmt.Errorf("build hf request: %w", err)
