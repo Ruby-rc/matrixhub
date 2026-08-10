@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/matrixhub-ai/matrixhub/internal/domain/registry"
@@ -43,9 +44,8 @@ func TestDiscovery_ListRepositories_Models(t *testing.T) {
 	defer ts.Close()
 
 	d := New()
-	d.baseURL = ts.URL
 
-	reg := &registry.Registry{}
+	reg := &registry.Registry{URL: ts.URL}
 	repos, err := d.ListRepositories(context.Background(), reg, registrydiscovery.Filter{
 		Namespace:    "google",
 		ResourceType: "model",
@@ -75,9 +75,8 @@ func TestDiscovery_ListRepositories_Datasets(t *testing.T) {
 	defer ts.Close()
 
 	d := New()
-	d.baseURL = ts.URL
 
-	reg := &registry.Registry{}
+	reg := &registry.Registry{URL: ts.URL}
 	repos, err := d.ListRepositories(context.Background(), reg, registrydiscovery.Filter{
 		Namespace:    "google",
 		ResourceType: "dataset",
@@ -105,9 +104,9 @@ func TestDiscovery_ListRepositories_WithCredential(t *testing.T) {
 	defer ts.Close()
 
 	d := New()
-	d.baseURL = ts.URL
 
 	reg := &registry.Registry{
+		URL:            ts.URL,
 		CredentialType: registry.CredentialTypeBasic,
 		AuthInfo:       `{"username":"token","password":"secret"}`,
 	}
@@ -123,114 +122,80 @@ func TestDiscovery_ListRepositories_WithCredential(t *testing.T) {
 	}
 }
 
-func TestDiscovery_ListRepositories_UsesRegistryURL(t *testing.T) {
-	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		t.Errorf("discovery hit the hardcoded upstream %s instead of the registry URL", r.Host)
-		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprint(w, `[]`)
-	}))
-	defer upstream.Close()
-
-	mirror := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/api/models" {
-			t.Errorf("unexpected path: %s", r.URL.Path)
-		}
-		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprint(w, `[{"id":"google/bert-base"}]`)
-	}))
-	defer mirror.Close()
-
-	d := New()
-	d.baseURL = upstream.URL
-
-	// A registry configured to proxy/mirror the HF API — discovery must follow it,
-	// the same way the pull path does.
-	reg := &registry.Registry{URL: mirror.URL + "/"}
-	repos, err := d.ListRepositories(context.Background(), reg, registrydiscovery.Filter{
-		Namespace:    "google",
-		ResourceType: "model",
-	})
-	if err != nil {
-		t.Fatalf("ListRepositories error = %v", err)
-	}
-	if len(repos) != 1 {
-		t.Fatalf("got %d repos, want 1", len(repos))
-	}
-	if repos[0].Namespace != "google" || repos[0].Name != "bert-base" {
-		t.Errorf("repos[0] = %+v, want google/bert-base", repos[0])
-	}
-}
-
-func TestDiscovery_ListRepositories_FallsBackToDefaultWhenRegistryURLEmpty(t *testing.T) {
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprint(w, `[{"id":"google/bert-base"}]`)
-	}))
-	defer ts.Close()
-
-	d := New()
-	d.baseURL = ts.URL
-
-	reg := &registry.Registry{}
-	repos, err := d.ListRepositories(context.Background(), reg, registrydiscovery.Filter{
-		Namespace:    "google",
-		ResourceType: "model",
-	})
-	if err != nil {
-		t.Fatalf("ListRepositories error = %v", err)
-	}
-	if len(repos) != 1 {
-		t.Fatalf("got %d repos, want 1", len(repos))
-	}
-}
-
-func TestDiscovery_endpointBase(t *testing.T) {
+func TestEndpointBase(t *testing.T) {
 	tests := []struct {
 		name    string
-		baseURL string
 		reg     *registry.Registry
 		want    string
+		wantErr bool
 	}{
 		{
-			name:    "registry url wins over the default hub",
-			baseURL: "https://huggingface.co",
-			reg:     &registry.Registry{URL: "https://hf-mirror.com"},
-			want:    "https://hf-mirror.com",
+			name: "registry url is used as-is",
+			reg:  &registry.Registry{URL: "https://hf-mirror.com"},
+			want: "https://hf-mirror.com",
 		},
 		{
-			name:    "trailing slash is trimmed",
-			baseURL: "https://huggingface.co",
-			reg:     &registry.Registry{URL: "https://hf-mirror.com/"},
-			want:    "https://hf-mirror.com",
+			name: "trailing slash is trimmed",
+			reg:  &registry.Registry{URL: "https://hf-mirror.com/"},
+			want: "https://hf-mirror.com",
 		},
 		{
-			name:    "path prefix is preserved",
-			baseURL: "https://huggingface.co",
-			reg:     &registry.Registry{URL: "https://proxy.internal/hf/"},
-			want:    "https://proxy.internal/hf",
+			name: "path prefix is preserved",
+			reg:  &registry.Registry{URL: "https://proxy.internal/hf/"},
+			want: "https://proxy.internal/hf",
 		},
 		{
-			name:    "empty registry url falls back to the default hub",
-			baseURL: "https://huggingface.co",
-			reg:     &registry.Registry{},
-			want:    "https://huggingface.co",
+			name:    "empty registry url is an error, not a fallback",
+			reg:     &registry.Registry{ID: 7, Name: "internal-mirror"},
+			wantErr: true,
 		},
 		{
-			name:    "nil registry falls back to the default hub",
-			baseURL: "https://huggingface.co/",
+			name:    "url of only a slash is an error",
+			reg:     &registry.Registry{ID: 8, Name: "broken", URL: "/"},
+			wantErr: true,
+		},
+		{
+			name:    "nil registry is an error",
 			reg:     nil,
-			want:    "https://huggingface.co",
+			wantErr: true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			d := New()
-			d.baseURL = tt.baseURL
-			if got := d.endpointBase(tt.reg); got != tt.want {
+			got, err := endpointBase(tt.reg)
+			if tt.wantErr {
+				if err == nil {
+					t.Fatalf("endpointBase() = %q, want error", got)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("endpointBase() error = %v", err)
+			}
+			if got != tt.want {
 				t.Errorf("endpointBase() = %q, want %q", got, tt.want)
 			}
 		})
+	}
+}
+
+// A registry without a URL must fail loudly. Falling back to a default host
+// would both match against the wrong catalogue and send the registry's
+// credential to a host the operator never configured.
+func TestDiscovery_ListRepositories_NoRegistryURL(t *testing.T) {
+	d := New()
+
+	reg := &registry.Registry{ID: 7, Name: "internal-mirror"}
+	_, err := d.ListRepositories(context.Background(), reg, registrydiscovery.Filter{
+		Namespace:    "google",
+		ResourceType: "model",
+	})
+	if err == nil {
+		t.Fatal("expected an error for a registry with no URL, got nil")
+	}
+	if !strings.Contains(err.Error(), "internal-mirror") {
+		t.Errorf("error = %v, want it to name the offending registry", err)
 	}
 }
 
@@ -261,60 +226,6 @@ func TestDiscovery_ListRepositories_RegistryURLWithPathPrefix(t *testing.T) {
 	}
 }
 
-func TestDiscovery_ListRepositories_RegistryURL_Datasets(t *testing.T) {
-	var gotPath string
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		gotPath = r.URL.Path
-		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprint(w, `[{"id":"google/wiki"}]`)
-	}))
-	defer ts.Close()
-
-	d := New()
-
-	reg := &registry.Registry{URL: ts.URL}
-	repos, err := d.ListRepositories(context.Background(), reg, registrydiscovery.Filter{
-		Namespace:    "google",
-		ResourceType: "dataset",
-	})
-	if err != nil {
-		t.Fatalf("ListRepositories error = %v", err)
-	}
-	if gotPath != "/api/datasets" {
-		t.Errorf("request path = %q, want /api/datasets", gotPath)
-	}
-	if len(repos) != 1 || repos[0].Name != "wiki" {
-		t.Fatalf("repos = %+v, want one google/wiki", repos)
-	}
-}
-
-func TestDiscovery_ListRepositories_RegistryURL_SendsCredential(t *testing.T) {
-	var gotAuth string
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		gotAuth = r.Header.Get("Authorization")
-		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprint(w, `[{"id":"google/bert-base"}]`)
-	}))
-	defer ts.Close()
-
-	d := New()
-
-	reg := &registry.Registry{
-		URL:            ts.URL,
-		CredentialType: registry.CredentialTypeBasic,
-		AuthInfo:       `{"username":"token","password":"secret"}`,
-	}
-	if _, err := d.ListRepositories(context.Background(), reg, registrydiscovery.Filter{
-		Namespace:    "google",
-		ResourceType: "model",
-	}); err != nil {
-		t.Fatalf("ListRepositories error = %v", err)
-	}
-	if gotAuth != "Bearer secret" {
-		t.Errorf("Authorization = %q, want %q", gotAuth, "Bearer secret")
-	}
-}
-
 func TestDiscovery_ListRepositories_HTTPError(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -322,9 +233,8 @@ func TestDiscovery_ListRepositories_HTTPError(t *testing.T) {
 	defer ts.Close()
 
 	d := New()
-	d.baseURL = ts.URL
 
-	reg := &registry.Registry{}
+	reg := &registry.Registry{URL: ts.URL}
 	_, err := d.ListRepositories(context.Background(), reg, registrydiscovery.Filter{
 		Namespace:    "google",
 		ResourceType: "model",
@@ -342,9 +252,8 @@ func TestDiscovery_ListRepositories_EmptyResult(t *testing.T) {
 	defer ts.Close()
 
 	d := New()
-	d.baseURL = ts.URL
 
-	reg := &registry.Registry{}
+	reg := &registry.Registry{URL: ts.URL}
 	repos, err := d.ListRepositories(context.Background(), reg, registrydiscovery.Filter{
 		Namespace:    "google",
 		ResourceType: "model",
