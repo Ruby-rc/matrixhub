@@ -19,7 +19,7 @@ data:
       connMaxLifetimeSeconds: {{ .Values.apiserver.database.connMaxLifetimeSeconds }}
       connMaxIdleSeconds: {{ .Values.apiserver.database.connMaxIdleSeconds }}
       migrate: {{ .Values.apiserver.database.migrate }}
-    migrationPath: /etc/matrixhub/migrations
+    migrationPath: {{ .Values.apiserver.database.migrationPath }}
     apiServer:
       port: {{ .Values.apiserver.port }}
       sshPort: {{ .Values.apiserver.sshPort }}

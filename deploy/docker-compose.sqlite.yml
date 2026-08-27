@@ -1,5 +1,5 @@
-# Default single-node Docker Compose deployment backed by SQLite.
-# The public demo uses the explicit MySQL and demo Compose files instead.
+# Compatibility entry point for the SQLite deployment; docker-compose.yml now defaults to SQLite.
+# Run with: docker compose -f docker-compose.sqlite.yml up -d
 services:
   matrixhub:
     image: ghcr.io/matrixhub-ai/matrixhub:${MATRIXHUB_IMAGE_TAG:-latest}
@@ -15,5 +15,5 @@ services:
       - "${MATRIXHUB_SSH_PORT:-2222}:22"
     volumes:
       - ./data/matrixhub:/data/
-      - ./config.yaml:/etc/matrixhub/config.yaml:ro
+      - ./config-sqlite.yaml:/etc/matrixhub/config.yaml:ro
     restart: unless-stopped

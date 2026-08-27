@@ -7,6 +7,8 @@ For backend package boundaries and dependency rules, see
 ## Prerequisites
 
 - Go 1.23+
+- A C compiler for SQLite development (`clang` on macOS, `gcc` on Linux;
+  install `build-base` on Alpine). SQLite requires `CGO_ENABLED=1`.
 - Node.js 18+ for the app UI; Node.js 20+ for the documentation website
 - pnpm 10.x (the app UI pins `pnpm >=10 <11` via `ui/package.json` engines)
 - Docker
@@ -14,6 +16,26 @@ For backend package boundaries and dependency rules, see
 ## Local Development
 
 Start with MySQL, then choose the frontend mode that matches your work.
+
+For a database-service-free, single-process backend setup, use SQLite instead:
+
+```bash
+CGO_ENABLED=1 go run ./cmd/matrixhub apiserver -c config/config-sqlite.yaml
+```
+
+The SQLite config stores `matrixhub.db` under `dataDir`, runs the SQLite
+migrations on startup, and limits the SQL pool to one connection. An explicit
+DSN can be supplied through `MATRIXHUB_DATABASE_DSN`:
+
+```bash
+export MATRIXHUB_DATABASE_DSN="file:./data/matrixhub.db?_busy_timeout=5000&_foreign_keys=on&_journal_mode=WAL&_synchronous=FULL&_txlock=immediate"
+```
+
+Use SQLite for local development and single-node installations only. Do not run
+multiple MatrixHub processes against the same file or place it on NFS/SMB. The
+MatrixHub Helm chart does not support SQLite.
+SQLite's built-in `NOCASE` collation only folds ASCII characters; names that
+differ only by non-ASCII case may behave differently from MySQL.
 
 ### 1. Start MySQL
 
@@ -291,6 +313,7 @@ records nothing and the runner warns when that happens.
 1. **First Run**: Setting `database.migrate: true` will automatically create database tables
 2. **Debug Mode**: Setting `debug: true` shows detailed SQL logs
 3. **Data Persistence**: Docker Compose uses named volumes, data persists after container restart
+4. **SQLite Contract Tests**: Run `make test.sqlite` after changing migrations or repository SQL
 
 ### Frontend
 
@@ -467,6 +490,13 @@ docker logs matrixhub-mysql
 # Restart MySQL
 docker restart matrixhub-mysql
 ```
+
+### SQLite Database Is Locked
+
+MatrixHub's default SQLite DSN waits five seconds for a writer and uses one SQL
+connection. If `database is locked` persists, verify that only one MatrixHub
+process uses the database and that the file is on a local filesystem. Keep
+`maxOpenConns: 1`; increasing it does not improve SQLite write throughput.
 
 ### Port Conflicts
 
