@@ -1,4 +1,4 @@
-# Default single-node Docker Compose config backed by SQLite.
+# Compatibility config for docker-compose.sqlite.yml; config.yaml is now the default SQLite config.
 debug: false
 migrationPath: /etc/matrixhub/migrations
 log:

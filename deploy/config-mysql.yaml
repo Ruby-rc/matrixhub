@@ -1,17 +1,16 @@
-# Default single-node Docker Compose config backed by SQLite.
-debug: false
+# Optional Docker Compose runtime config backed by MySQL.
+debug: true
 migrationPath: /etc/matrixhub/migrations
 log:
-  level: info
+  level: debug
 dataDir: /data
 database:
-  driver: sqlite
+  driver: mysql
   accessType: readwrite
-  dsn: "file:/data/matrixhub.db?_busy_timeout=5000&_foreign_keys=on&_journal_mode=WAL&_synchronous=FULL&_txlock=immediate"
-  maxOpenConns: 1
-  maxIdleConns: 1
-  connMaxLifetimeSeconds: 0
-  connMaxIdleSeconds: 0
+  maxOpenConns: 100
+  maxIdleConns: 10
+  connMaxLifetimeSeconds: 3600
+  connMaxIdleSeconds: 1800
   migrate: true
 apiServer:
   port: 3001

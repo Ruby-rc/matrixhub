@@ -165,6 +165,10 @@ test.unit: ## Run all unit tests
 test.unit.coverage: ## Run all unit tests with coverage
 	COVERAGE=true COVERAGE_PROFILE="$(UNIT_TEST_COVERAGE_PROFILE)" bash ./scripts/unit-test.sh
 
+.PHONY: test.sqlite
+test.sqlite: ## Run SQLite migration, repository, and session contract tests
+	CGO_ENABLED=1 go test -count=1 ./internal/infra/config ./internal/infra/db ./internal/repo
+
 .PHONY: deploy.kind-cluster
 deploy.kind-cluster: ## Setup KIND cluster
 	./scripts/setup-kind-cluster.sh
