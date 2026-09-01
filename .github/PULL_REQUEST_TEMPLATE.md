@@ -38,7 +38,7 @@ Please use the following format for linking documentation below checkbox:
 - [ ] Tests(ut, e2e) added or updated, or not needed and explained
 - [ ] Docs(tech docs, usage docs) updated, or not needed and explained
 
-#### Does this PR introduce a user-facing change?
+#### Does this PR introduce a user-facing, API-facing, or operator-facing change?
 <!--
 If no, just write "NONE" in the release-note block below.
 If yes, a release note is required:

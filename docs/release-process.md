@@ -40,11 +40,12 @@ This matches the [Release workflow](../.github/workflows/release.yml): jobs `rel
 
 MatrixHub follows the Kubernetes model:
 
-1. **During development:** contributors add a `release-note` block (or `NONE`) in each pull request — this is source material, not a published release note by itself.
-2. **At an official release:** maintainers aggregate those PR release notes into [`CHANGELOG/`](../CHANGELOG/) and the [GitHub Releases](https://github.com/matrixhub-ai/matrixhub/releases) page for that version.
-3. **RC tags:** skipped — no aggregation and no publication until the official tag.
-
-See [Adding release notes in pull requests](#adding-release-notes-in-pull-requests).
+1. Contributors follow
+   [Release notes in pull requests](../CONTRIBUTING.md#release-notes-in-pull-requests).
+2. The release owner follows [Prepare release notes](#prepare-release-notes) to
+   generate, review, and merge the draft changelog PR before the official tag.
+3. The Release workflow uses the committed version section for the draft
+   [GitHub Release](https://github.com/matrixhub-ai/matrixhub/releases).
 
 ## Tags and branches
 
@@ -92,18 +93,6 @@ For **official** tags only (`vX.Y.Z` without `-rc` / `-dev`):
 Maintainers must **review and publish** the draft release manually.
 
 `scripts/release-notes.sh` reads the matching section from `CHANGELOG/CHANGELOG-X.Y.md`. If the tagged commit does not yet contain that file (for example when promoting `v0.1.0` on the same commit as `v0.1.0-rc.1`), the script falls back to `origin/main` for the changelog content. **Always verify the draft release body** before publishing — see [Promoting an RC on the same commit](#promoting-an-rc-on-the-same-commit).
-
-### Adding release notes in pull requests
-
-Every pull request with a user-visible change should include a release note in the PR template’s `release-note` block (or `NONE` if not user-facing). Reviewers check release note quality before merge — same idea as [Kubernetes](https://github.com/kubernetes/community/blob/main/contributors/guide/release-notes.md).
-
-Example:
-
-```release-note
-Added MatrixHub-type registry configuration for private deployments. (#710, @contributor)
-```
-
-These blocks are **not** shown as a versioned release note until an **official** tag is cut. RC tags do not trigger collection or publication.
 
 ## Release candidate process
 
@@ -166,7 +155,7 @@ An official (minor or initial) release is e.g. `v0.1.0`.
 
 An official release requires:
 
-- Prepare release notes (aggregate PR `release-note` blocks or bootstrap `CHANGELOG/` for the first GA)
+- Generate, review, and merge the release-notes PR (or bootstrap `CHANGELOG/` for the first GA)
 - CI green on the commit to be tagged
 - Tag the release (often after a final RC)
 - Verify release workflow succeeded
@@ -178,9 +167,25 @@ An official release requires:
 
 #### Prepare release notes
 
-Review merged PRs since the **last official tag** (not since the last RC). Collect non-`NONE` `release-note` blocks into the version section of [`CHANGELOG/`](../CHANGELOG/) (for example `CHANGELOG/CHANGELOG-0.1.md` for the v0.1 line).
+Create the draft around feature freeze or the first RC:
 
-For the **first official release** (`v0.1.0`), bootstrap that file manually if historical PRs lack release notes; see the bootstrap step in [Review and publish the GitHub Release](#review-and-publish-the-github-release).
+1. Open the repository's [**Actions**](https://github.com/matrixhub-ai/matrixhub/actions)
+   tab.
+2. In the left sidebar, select **Prepare Release Notes**.
+3. Above the workflow runs, click **Run workflow** to open the form.
+4. Select the branch containing the workflow, normally `main`, then fill in:
+   - **version:** the official `vX.Y.Z` version;
+   - **base_branch:** the branch to tag, normally `main`;
+   - **start_ref:** leave empty unless you need a custom range.
+5. Click the green **Run workflow** button in the form.
+6. When the run succeeds, review the draft PR from `release-notes/vX.Y.Z`. Add
+   hand-written content outside the generated markers.
+7. If validation fails, fix the reported PR metadata and rerun. Rerun again after
+   late fixes, then mark the PR ready and merge it before creating the official tag.
+
+The workflow collects changes since the previous official tag, omits `NONE`/`NO`
+entries, and updates `CHANGELOG/CHANGELOG-X.Y.md`. For the first official release,
+backfill old PR metadata or prepare the initial section manually.
 
 #### Check CI is green
 
@@ -302,8 +307,8 @@ If `main` contains new features but a patch release (`v0.1.1`) should include **
 A cherry-pick patch release requires:
 
 - Create (or reuse) a release branch
-- Cherry-pick fix commits into the release branch
-- Ensure cherry-pick PRs include `release-note` blocks for the patch notes
+- Merge fixes through PRs targeting the release branch
+- Generate, review, and merge the release-notes PR
 - Tag the patch on the release branch
 - Verify pipeline, publish draft release, smoke-test, announce
 
@@ -320,12 +325,13 @@ git push origin release-0.1
 ##### Cherry-pick fixes
 
 ```bash
-git checkout release-0.1
-git cherry-pick <SHA>   # repeat for each fix
-git push origin release-0.1
+git checkout -b backport-fix release-0.1
+git cherry-pick <SHA>
+git push origin HEAD
 ```
 
-Open a PR into `release-0.1` when cherry-picks need review.
+Open a PR into `release-0.1`, complete its `/kind` and `release-note` metadata,
+and merge it after CI passes.
 
 > **CI parity:** PRs (and pushes) to a `release-*` branch run the same gating CI as
 > `main` — Unit tests, Go Lint, govulncheck, CodeQL, Workflow Lint, and Website tests,
@@ -333,6 +339,11 @@ Open a PR into `release-0.1` when cherry-picks need review.
 > under these same checks as `main`** before merge, so the commit you tag from the
 > release line is CI-green. The workflows list `main` and `release-*` in their
 > `branches` filters; keep any new gating workflow aligned with this pattern.
+
+##### Prepare patch release notes
+
+Follow [Prepare release notes](#prepare-release-notes), using version `v0.1.1` and
+base branch `release-0.1`.
 
 ##### Tag patch release
 
@@ -360,7 +371,8 @@ Security fixes follow the same tagging pipeline. Additionally:
 Use this quick checklist for every official release:
 
 - [ ] Target commit is green on CI
-- [ ] Release notes prepared in `CHANGELOG/` (or draft body edited manually)
+- [ ] Generated release-notes PR reviewed, finalized, and merged into the branch
+      being tagged
 - [ ] RC smoke-tested (recommended for minor releases)
 - [ ] Tag pushed (`vX.Y.Z`)
 - [ ] Release workflow succeeded (image, chart, SBOM, cosign)
@@ -376,3 +388,4 @@ Use this quick checklist for every official release:
 - [Maintainers](../MAINTAINERS.md)
 - [GitHub Releases](https://github.com/matrixhub-ai/matrixhub/releases)
 - [Release workflow](https://github.com/matrixhub-ai/matrixhub/actions/workflows/release.yml)
+- [Prepare Release Notes workflow](https://github.com/matrixhub-ai/matrixhub/actions/workflows/prepare-release-notes.yml)
