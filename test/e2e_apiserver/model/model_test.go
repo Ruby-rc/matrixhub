@@ -16,6 +16,7 @@ package model_test
 
 import (
 	"context"
+	"strings"
 
 	v1alpha1model "github.com/matrixhub-ai/matrixhub/test/client/v1alpha1/model"
 	v1alpha1project "github.com/matrixhub-ai/matrixhub/test/client/v1alpha1/project"
@@ -27,6 +28,43 @@ import (
 )
 
 func boolPtr(b bool) *bool { return &b }
+
+func createGitModelFixture(
+	ctx context.Context,
+	modelsAPI *v1alpha1model.ModelsApiService,
+	projectsAPI *v1alpha1project.ProjectsApiService,
+) (string, string) {
+	projectName := tools.GenerateTestProjectName("model-git")
+	projectType := v1alpha1project.PRIVATE_V1alpha1ProjectType
+	_, _, err := projectsAPI.ProjectsCreateProject(ctx, v1alpha1project.V1alpha1CreateProjectRequest{
+		Name:  projectName,
+		Type_: &projectType,
+	})
+	Expect(err).NotTo(HaveOccurred())
+
+	modelName := tools.GenerateTestModelName("git-model")
+	_, _, err = modelsAPI.ModelsCreateModel(ctx, v1alpha1model.V1alpha1CreateModelRequest{
+		Project: projectName,
+		Name:    modelName,
+	})
+	Expect(err).NotTo(HaveOccurred())
+
+	return projectName, modelName
+}
+
+func cleanupGitModelFixture(
+	ctx context.Context,
+	modelsAPI *v1alpha1model.ModelsApiService,
+	projectsAPI *v1alpha1project.ProjectsApiService,
+	projectName, modelName string,
+) {
+	if modelName != "" {
+		_, _, _ = modelsAPI.ModelsDeleteModel(ctx, projectName, modelName)
+	}
+	if projectName != "" {
+		_, _, _ = projectsAPI.ProjectsDeleteProject(ctx, projectName)
+	}
+}
 
 var _ = Describe("Model", Label("model"), func() {
 	var (
@@ -146,6 +184,24 @@ var _ = Describe("Model", Label("model"), func() {
 			Expect(err).To(HaveOccurred())
 		})
 
+		It("should reject invalid model names", Label("M00058"), func() {
+			invalidNames := []string{
+				"-leading-dash",
+				"contains space",
+				"contains/slash",
+				"models",
+				strings.Repeat("a", 252),
+			}
+
+			for _, modelName := range invalidNames {
+				_, _, err := modelsApi.ModelsCreateModel(ctx, v1alpha1model.V1alpha1CreateModelRequest{
+					Project: projectName,
+					Name:    modelName,
+				})
+				Expect(err).To(HaveOccurred(), "model name %q should fail validation", modelName)
+			}
+		})
+
 		// --- GetModel ---
 		It("should get an existing model with all expected fields", Label("M00008"), func() {
 			modelName := tools.GenerateTestModelName("get-model")
@@ -164,6 +220,25 @@ var _ = Describe("Model", Label("model"), func() {
 			Expect(getResp.CreatedAt).NotTo(BeEmpty())
 
 			GinkgoWriter.Printf("GetModel: id=%v, name=%v, project=%v\n", getResp.Id, getResp.Name, getResp.Project)
+		})
+
+		It("should return default fields for a newly created model", Label("M00059"), func() {
+			modelName := tools.GenerateTestModelName("defaults")
+			_, _, err := modelsApi.ModelsCreateModel(ctx, v1alpha1model.V1alpha1CreateModelRequest{
+				Project: projectName,
+				Name:    modelName,
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			getResp, _, err := modelsApi.ModelsGetModel(ctx, projectName, modelName)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(getResp.DefaultBranch).To(Equal("main"))
+			Expect(getResp.CloneUrls).NotTo(BeNil())
+			Expect(getResp.Labels).To(BeEmpty())
+			Expect(getResp.ReadmeContent).To(BeEmpty())
+			Expect(getResp.Size).To(Equal("0"))
+			Expect(getResp.ParameterCount).To(Equal("0"))
+			Expect(getResp.Popular).To(BeFalse())
 		})
 
 		It("should fail to get a non-existent model", Label("M00009"), func() {
@@ -360,7 +435,7 @@ var _ = Describe("Model", Label("model"), func() {
 	})
 
 	// ═══════════════════════════════════════════════════════════
-	// 3. ListModelRevisions (requires pre-existing model with git data)
+	// 3. ListModelRevisions
 	// ═══════════════════════════════════════════════════════════
 	Context("ListModelRevisions API", Label("git"), func() {
 		var (
@@ -369,14 +444,11 @@ var _ = Describe("Model", Label("model"), func() {
 		)
 
 		BeforeEach(func() {
-			gitProject = tools.GetGitModelProject()
-			gitModel = tools.GetGitModelName()
+			gitProject, gitModel = createGitModelFixture(ctx, modelsApi, projectsApi)
+		})
 
-			// Verify the git model exists, skip if not available
-			_, _, err := modelsApi.ModelsGetModel(ctx, gitProject, gitModel)
-			if err != nil {
-				Skip("GIT_MODEL not available: " + gitProject + "/" + gitModel + " — set MATRIXHUB_GIT_PROJECT and MATRIXHUB_GIT_MODEL env vars")
-			}
+		AfterEach(func() {
+			cleanupGitModelFixture(ctx, modelsApi, projectsApi, gitProject, gitModel)
 		})
 
 		It("should list revisions successfully", Label("M00020"), func() {
@@ -395,7 +467,7 @@ var _ = Describe("Model", Label("model"), func() {
 	})
 
 	// ═══════════════════════════════════════════════════════════
-	// 4. ListModelCommits + GetModelCommit (requires git data)
+	// 4. ListModelCommits + GetModelCommit
 	// ═══════════════════════════════════════════════════════════
 	Context("Commits APIs", Label("git"), func() {
 		var (
@@ -404,13 +476,11 @@ var _ = Describe("Model", Label("model"), func() {
 		)
 
 		BeforeEach(func() {
-			gitProject = tools.GetGitModelProject()
-			gitModel = tools.GetGitModelName()
+			gitProject, gitModel = createGitModelFixture(ctx, modelsApi, projectsApi)
+		})
 
-			_, _, err := modelsApi.ModelsGetModel(ctx, gitProject, gitModel)
-			if err != nil {
-				Skip("GIT_MODEL not available: " + gitProject + "/" + gitModel)
-			}
+		AfterEach(func() {
+			cleanupGitModelFixture(ctx, modelsApi, projectsApi, gitProject, gitModel)
 		})
 
 		It("should list commits with default branch", Label("M00022"), func() {
@@ -428,6 +498,16 @@ var _ = Describe("Model", Label("model"), func() {
 		It("should list commits with revision=main", Label("M00023"), func() {
 			resp, _, err := modelsApi.ModelsListModelCommits(ctx, gitProject, gitModel, &v1alpha1model.ModelsApiModelsListModelCommitsOpts{
 				Revision: optional.NewString("main"),
+				Page:     optional.NewInt32(1),
+				PageSize: optional.NewInt32(10),
+			})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(resp.Items).NotTo(BeNil())
+		})
+
+		It("should list commits with diff=false", Label("M00061"), func() {
+			resp, _, err := modelsApi.ModelsListModelCommits(ctx, gitProject, gitModel, &v1alpha1model.ModelsApiModelsListModelCommitsOpts{
+				Diff:     optional.NewBool(false),
 				Page:     optional.NewInt32(1),
 				PageSize: optional.NewInt32(10),
 			})
@@ -491,7 +571,7 @@ var _ = Describe("Model", Label("model"), func() {
 	})
 
 	// ═══════════════════════════════════════════════════════════
-	// 5. GetModelTree (requires git data)
+	// 5. GetModelTree
 	// ═══════════════════════════════════════════════════════════
 	Context("GetModelTree API", Label("git"), func() {
 		var (
@@ -500,13 +580,11 @@ var _ = Describe("Model", Label("model"), func() {
 		)
 
 		BeforeEach(func() {
-			gitProject = tools.GetGitModelProject()
-			gitModel = tools.GetGitModelName()
+			gitProject, gitModel = createGitModelFixture(ctx, modelsApi, projectsApi)
+		})
 
-			_, _, err := modelsApi.ModelsGetModel(ctx, gitProject, gitModel)
-			if err != nil {
-				Skip("GIT_MODEL not available: " + gitProject + "/" + gitModel)
-			}
+		AfterEach(func() {
+			cleanupGitModelFixture(ctx, modelsApi, projectsApi, gitProject, gitModel)
 		})
 
 		It("should get root tree successfully", Label("M00029"), func() {
@@ -551,7 +629,7 @@ var _ = Describe("Model", Label("model"), func() {
 	})
 
 	// ═══════════════════════════════════════════════════════════
-	// 6. GetModelBlob (requires git data)
+	// 6. GetModelBlob
 	// ═══════════════════════════════════════════════════════════
 	Context("GetModelBlob API", Label("git"), func() {
 		var (
@@ -562,18 +640,12 @@ var _ = Describe("Model", Label("model"), func() {
 		)
 
 		BeforeEach(func() {
-			gitProject = tools.GetGitModelProject()
-			gitModel = tools.GetGitModelName()
-
-			_, _, err := modelsApi.ModelsGetModel(ctx, gitProject, gitModel)
-			if err != nil {
-				Skip("GIT_MODEL not available: " + gitProject + "/" + gitModel)
-			}
+			gitProject, gitModel = createGitModelFixture(ctx, modelsApi, projectsApi)
 
 			// Discover file and directory paths from tree
 			treeResp, _, err := modelsApi.ModelsGetModelTree(ctx, gitProject, gitModel, &v1alpha1model.ModelsApiModelsGetModelTreeOpts{})
 			if err != nil {
-				Skip("cannot get tree for GIT_MODEL")
+				Fail("cannot get tree for test Git model: " + err.Error())
 			}
 
 			for _, item := range treeResp.Items {
@@ -587,6 +659,10 @@ var _ = Describe("Model", Label("model"), func() {
 					firstDirPath = item.Path
 				}
 			}
+		})
+
+		AfterEach(func() {
+			cleanupGitModelFixture(ctx, modelsApi, projectsApi, gitProject, gitModel)
 		})
 
 		It("should get blob for a file with valid fields", Label("M00033"), func() {
@@ -1125,6 +1201,41 @@ var _ = Describe("Model", Label("model"), func() {
 			}
 			Expect(foundA).To(BeTrue(), "Popular model should appear in popular list")
 			Expect(foundB).To(BeFalse(), "Non-popular model should not appear in popular list")
+		})
+
+		It("should include popular and normal models when popular filter is omitted", Label("M00060"), func() {
+			popularModel := tools.GenerateTestModelName("popular")
+			normalModel := tools.GenerateTestModelName("normal")
+
+			_, _, err := modelsApi.ModelsCreateModel(ctx, v1alpha1model.V1alpha1CreateModelRequest{
+				Project: projectName,
+				Name:    popularModel,
+			})
+			Expect(err).NotTo(HaveOccurred())
+			_, _, err = modelsApi.ModelsCreateModel(ctx, v1alpha1model.V1alpha1CreateModelRequest{
+				Project: projectName,
+				Name:    normalModel,
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			_, _, err = modelsApi.ModelsUpdateModelSetting(ctx, projectName, popularModel, v1alpha1model.ModelsUpdateModelSettingBody{
+				Popular: boolPtr(true),
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			listResp, _, err := modelsApi.ModelsListModels(ctx, &v1alpha1model.ModelsApiModelsListModelsOpts{
+				Project:  optional.NewString(projectName),
+				Page:     optional.NewInt32(1),
+				PageSize: optional.NewInt32(50),
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			modelNames := make(map[string]bool, len(listResp.Items))
+			for _, item := range listResp.Items {
+				modelNames[item.Name] = true
+			}
+			Expect(modelNames).To(HaveKey(popularModel))
+			Expect(modelNames).To(HaveKey(normalModel))
 		})
 
 		It("should fail to update setting for non-existent model", Label("M00056"), func() {
