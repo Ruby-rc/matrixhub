@@ -69,7 +69,8 @@ triage includes checking for duplicates, asking for missing reproduction steps o
 logs, confirming whether a bug can be reproduced, and suggesting the most relevant
 labels.
 
-If you have permission to label issues, add labels that match the issue:
+Anyone may add or remove existing public `kind/*`, `area/*`, `priority/*`, and
+`triage/*` labels with commands such as `/kind bug` and `/remove-kind bug`:
 
 - **Type:** `kind/bug`, `kind/feature`, `kind/design`, `kind/dependency`,
   `kind/documentation`, `kind/support`, `kind/cleanup`, `kind/flake`,
@@ -81,11 +82,8 @@ If you have permission to label issues, add labels that match the issue:
 - **Priority:** `priority/backlog`, `priority/important-soon`,
   `priority/important-longterm`, or `priority/critical-urgent`.
 
-Use `good first issue` or `help wanted` only when the issue is clear enough for a
-new contributor or when maintainer help is welcome.
-
-If you do not have permission to label issues, leave a comment with your triage
-notes and suggested labels. Maintainers can apply labels or ask follow-up questions from there.
+On issues, anyone may also use `/good-first-issue`, `/help-wanted`, and their
+`/remove-*` forms. Reserve them for clear starter work or issues seeking help.
 
 Once an issue is confirmed for a release, maintainers add it to the corresponding
 release milestone (for example `v0.2`).
@@ -227,13 +225,14 @@ commands, local setup, coverage, and E2E notes.
 - Keep PRs focused and reasonably small; link the issue they address.
 - Ensure **CI is green** (lint, unit tests, and other checks) and that your commits
   are **signed off**.
-- Fill in the PR template `release-note` block for user-visible changes (see
+- Choose a `/kind` and fill in the PR template `release-note` block (see
   [Release notes in pull requests](#release-notes-in-pull-requests)).
 
 ## Review process
 
 - Reviews follow the [`OWNERS`](OWNERS) model: maintainers use `/lgtm` and `/approve`
   on PRs. A PR is merged once it has the required approvals and CI passes.
+- Anyone may use `/hold` to pause a PR and `/hold cancel` or `/unhold` to resume it.
 - Be responsive to review feedback; maintainers aim to review promptly but this is a
   community project, so please be patient.
 
@@ -242,25 +241,21 @@ maintainer.
 
 ## Release notes in pull requests
 
-MatrixHub follows the [Kubernetes release notes model](https://github.com/kubernetes/community/blob/main/contributors/guide/release-notes.md):
+MatrixHub follows the [Kubernetes release notes model](https://github.com/kubernetes/community/blob/main/contributors/guide/release-notes.md).
+Every pull request must choose a `/kind` and complete the `release-note` block with
+a user-, API-, or operator-facing change, or `NONE`.
 
-- **Official releases only** (`vX.Y.Z`) publish release notes on the
-  [GitHub Releases](https://github.com/matrixhub-ai/matrixhub/releases) page and in
-  [`CHANGELOG/`](CHANGELOG/README.md). RC and dev tags do **not** publish release notes.
-- **Every pull request** with a user-visible change must include a `release-note`
-  block in the PR description (or `NONE` if not user-facing). The PR template already
-  includes this section.
-- Reviewers should check release note quality during review (clear, past tense,
-  user-focused).
+Anyone may correct Kind with `/kind` or `/remove-kind`. The bot derives release-note
+labels from the PR body, and reviewers verify the note's accuracy and wording.
 
 Example:
 
 ```release-note
-Added permission-based filtering to the project list API. (#664, @contributor)
+Added permission-based filtering to the project list API.
 ```
 
-Maintainers aggregate these notes into `CHANGELOG/` when cutting an official release.
-See [Release process](docs/release-process.md) for maintainer steps.
+The collector adds PR and author links. Maintainers should follow
+[Prepare release notes](docs/release-process.md#prepare-release-notes).
 
 ## License of contributions
 

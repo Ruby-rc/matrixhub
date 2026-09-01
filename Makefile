@@ -147,9 +147,11 @@ verify.ui: ## Run UI lint, typecheck, and build
 	cd ui && pnpm run build
 
 .PHONY: verify.workflow
-verify.workflow: ## Run GitHub Actions workflow lint checks
+verify.workflow: ## Run GitHub Actions workflow and release-note automation checks
 	go run github.com/rhysd/actionlint/cmd/actionlint@$(ACTIONLINT_VERSION) -color -shellcheck=
 	bash ./scripts/verify-action-refs.sh
+	bash -n scripts/changelog.sh scripts/changelog.test.sh
+	bash scripts/changelog.test.sh
 
 .PHONY: verify.govulncheck
 verify.govulncheck: ## Run Go vulnerability reachability checks

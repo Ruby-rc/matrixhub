@@ -8,6 +8,8 @@ on:
     paths:
       - '.github/workflows/**'
       - '.github/actions/**'
+      - 'scripts/changelog.sh'
+      - 'scripts/changelog.test.sh'
   push:
     branches:
       - main
@@ -15,6 +17,8 @@ on:
     paths:
       - '.github/workflows/**'
       - '.github/actions/**'
+      - 'scripts/changelog.sh'
+      - 'scripts/changelog.test.sh'
 
 permissions:
   contents: read
@@ -31,6 +35,12 @@ jobs:
 
       - name: Run actionlint
         run: ./actionlint -color -shellcheck=
+
+      - name: Check release note collector syntax
+        run: bash -n scripts/changelog.sh scripts/changelog.test.sh
+
+      - name: Test release note collector
+        run: bash scripts/changelog.test.sh
 
       - name: Validate action refs
         env:
