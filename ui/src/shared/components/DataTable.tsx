@@ -406,6 +406,7 @@ export function DataTable<TData extends MRT_RowData>({
     mantineFilterSelectProps,
     mantineFilterTextInputProps,
     mantinePaperProps,
+    mantineTableBodyRowProps,
     mantineTableContainerProps,
     mantineTableProps,
     state: extraState,
@@ -670,9 +671,14 @@ export function DataTable<TData extends MRT_RowData>({
             padding: '0 var(--mantine-spacing-sm)',
           },
         }}
-        mantineTableBodyRowProps={({ row }) => ({
-          bg: row.getIsSelected() ? 'var(--mantine-color-cyan-light)' : undefined,
-        })}
+        mantineTableBodyRowProps={(args) => {
+          const rowProps = resolveTableOptionProps(mantineTableBodyRowProps, args)
+
+          return {
+            bg: args.row.getIsSelected() ? 'var(--mantine-color-cyan-light)' : undefined,
+            ...rowProps,
+          }
+        }}
       />
 
       {onPageChange && (
